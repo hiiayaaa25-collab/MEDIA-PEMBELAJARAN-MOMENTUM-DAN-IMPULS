@@ -778,10 +778,16 @@
 
                 // LEVEL 9: TUMBUKAN LENTING TIDAK SEMPURNA (GAMBAR - SIMPAN UNTUK PENILAIAN GURU)
                 {
-                    id: 9, x: 7400, type: 'text-input', visual: 'croc',
+                    id: 9, x: 7400, type: 'text-input', visual: 'river_stones',
                     question: "Bola A dan B masing-masing bermassa 1 kg dan 2 kg secara bersamaan dilepaskan hingga meluncur di atas bidang yang licin seperti gambar. Setelah bertumbukan di bidang datar, kedua benda menjadi satu dan bergerak bersama-sama. Tentukan kecepatan kedua bola setelah bertumbukan! (Tulis langkah perhitungan dan hasil akhir dalam m/s).",
                     sim: { type: 'image', src: 'https://raw.githubusercontent.com/lorrainemydth-gif/ICT-MEDIA-PEMBELAJARAN/956343b4347b716263d646a8c84f94bb9d4c8db0/WhatsApp%20Image%202025-12-16%20at%2012.38.16%20PM.jpeg' },
-                    options: { input: { placeholder: 'Misal: v = 2.0 m/s' }, feedback: { saved: 'Jawaban disimpan untuk penilaian guru — tidak dievaluasi otomatis.' }, noEval: true }
+                    options: {
+                        input: { placeholder: 'Misal: v = 2.0 m/s' },
+                        feedback: { correct: 'Terlihat baik — jawaban mengandung nilai kecepatan (m/s).', wrong: 'Tulis langkah perhitungan dan nilai akhir dalam satuan m/s. Cantumkan "m/s" atau notasi v= untuk mempermudah penilaian otomatis.' },
+                        explanation: 'Gunakan kekekalan momentum: (m1 v1 + m2 v2) = (m1 + m2) v_final ketika menempel bersama.',
+                        keywords: ['m/s','v=','kecepatan'],
+                        obstacle: { style: 'stepping_stones', difficulty: 'medium' }
+                    }
                 },
 
                 // FINISH (langsung setelah rintangan 9)
@@ -1034,6 +1040,13 @@
                     else p.jumpOffset = -h * (1 - (progress-0.8)/0.2);
                 } 
                 else if (act.type === 'river') p.jumpOffset = -(Math.abs(Math.sin(progress * Math.PI * 3)) * 25);
+                else if (act.type === 'river_stones') {
+                    // Stepping stones: faster small hops and slight lateral wobble
+                    p.jumpOffset = -(Math.abs(Math.sin(progress * Math.PI * 6)) * 30);
+                    // Add subtle lateral wobble to x for visual challenge
+                    const wobble = Math.sin(progress * Math.PI * 12) * 8;
+                    p.x = act.startX + (act.endX - act.startX) * progress + wobble;
+                }
                 else if (act.type === 'spike') p.jumpOffset = -(Math.sin(progress * Math.PI) * 80);
                 else if (act.type === 'cannon') p.jumpOffset = -(Math.sin(progress * Math.PI) * 200);
                 else if (act.type === 'tunnel') p.jumpOffset = 0;
@@ -1330,6 +1343,23 @@
                         // TEKS DI TENGAH
                         ctx.fillStyle = 'white'; ctx.shadowBlur=4;
                         ctx.fillText("SUNGAI DERAS", 0, 5);
+
+                    } else if (g.visual === 'river_stones') {
+                        // VISUAL: SUNGAI DENGAN BATU LOMPAT
+                        const riverWidth = 340;
+                        ctx.fillStyle = '#2563eb'; ctx.shadowBlur=0; ctx.fillRect(-riverWidth/2, -ROAD_HALF - 20, riverWidth, ROAD_HEIGHT + 40);
+                        ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2;
+                        for(let y = -ROAD_HALF; y < ROAD_HALF; y+=36) { ctx.beginPath(); ctx.moveTo(-riverWidth/3, y); ctx.lineTo(riverWidth/3, y); ctx.stroke(); }
+                        // Stepping stones
+                        ctx.fillStyle = '#6b7280'; ctx.strokeStyle = '#374151'; ctx.lineWidth = 2;
+                        const stones = [-120, -60, 0, 60, 120];
+                        stones.forEach((sx, i) => {
+                            const r = 18 + (i%2===0?4:0);
+                            ctx.beginPath(); ctx.ellipse(sx, 0, r, r*0.7, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                        });
+                        // Banks
+                        ctx.fillStyle = '#78350f'; ctx.fillRect(-(riverWidth/2 + 5), -ROAD_HALF - 20, 5, ROAD_HEIGHT+40); ctx.fillRect(riverWidth/2, -ROAD_HALF - 20, 5, ROAD_HEIGHT+40);
+                        ctx.fillStyle = 'white'; ctx.shadowBlur=4; ctx.fillText("SUNGAI + BATU LOMPAT", 0, 5);
 
                     } else if (g.visual === 'gate') {
                         // Finish gate / arch
@@ -1931,6 +1961,9 @@
             if (visualType === 'river') {
                 // Sungai lebar 200px (-100 sampai +100)
                 startOffset = -130; endOffset = 130; duration = 3000; 
+            } else if (visualType === 'river_stones') {
+                // Sungai dengan batu loncat (lebih lebar dan butuh lompatan berkali)
+                startOffset = -160; endOffset = 160; duration = 3200;
             } else if (visualType === 'spike') {
                 // Lubang duri lebar 80px (dipersempit)
                 startOffset = -60; endOffset = 60; duration = 1500; // ADJUSTED: Lebih dekat & cepat
