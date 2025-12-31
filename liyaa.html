@@ -1576,6 +1576,21 @@
 
         function seededChoice(x,y,salt, n) { return Math.floor(seededValue(x,y,salt) * n); }
 
+        // simple hex color shading: percent negative -> darker, positive -> lighter
+        function shade(hex, percent) {
+            try {
+                const h = hex.replace('#','');
+                const num = parseInt(h,16);
+                let r = (num >> 16) + Math.round(2.55 * percent);
+                let g = ((num >> 8) & 0x00FF) + Math.round(2.55 * percent);
+                let b = (num & 0x0000FF) + Math.round(2.55 * percent);
+                r = Math.max(0, Math.min(255, r));
+                g = Math.max(0, Math.min(255, g));
+                b = Math.max(0, Math.min(255, b));
+                return `#${((1<<24) + (r<<16) + (g<<8) + b).toString(16).slice(1)}`;
+            } catch(e) { return hex; }
+        }
+
         // Modified DrawObject to accept explicit Y
         function drawObject(obj, overrideY) {
             const y = overrideY !== undefined ? overrideY : obj.y;
@@ -1606,33 +1621,40 @@
 
             // --- JIKA TIDAK ADA GAMBAR, GAMBAR BENTUK DEFAULT (KODE LAMA) ---
             if (obj.type === 'building') {
-                // visual-only: tidy rectangular building with consistent outline and windows
-                const variant = seededChoice(obj.x, y, 'building', 3);
-                const base = obj.color || '#e2e8f0';
-                // main body
-                ctx.fillStyle = base;
-                ctx.beginPath(); ctx.roundRect(obj.x - obj.w/2, y - obj.h/2, obj.w, obj.h, 6); ctx.fill();
-                // outline
-                ctx.lineWidth = 3; ctx.strokeStyle = '#0f172a'; ctx.strokeRect(obj.x - obj.w/2, y - obj.h/2, obj.w, obj.h);
-                // subtle side shading
-                ctx.fillStyle = 'rgba(0,0,0,0.06)'; ctx.fillRect(obj.x + obj.w*0.12, y - obj.h/2, obj.w*0.16, obj.h);
-                // windows grid (stable per position)
-                const cols = variant === 0 ? 3 : variant === 1 ? 2 : 4;
-                const rows = Math.max(3, Math.floor((obj.h - 40) / 30));
-                const wW = Math.min(18, Math.max(8, Math.floor(obj.w / (cols * 1.4))));
-                const wH = Math.min(18, Math.max(8, Math.floor((obj.h - 40) / (rows * 1.2))));
-                ctx.fillStyle = variant === 1 ? '#fde68a' : '#bae6fd';
-                ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1;
-                for (let r = 0; r < rows; r++) {
-                    for (let c = 0; c < cols; c++) {
-                        const ix = obj.x - obj.w/2 + 10 + c * (obj.w / cols);
-                        const iy = y - obj.h/2 + 20 + r * (obj.h / rows);
-                        ctx.beginPath(); ctx.roundRect(ix, iy, wW, wH, 3); ctx.fill(); ctx.stroke();
-                    }
+                // Replace building visuals with a forest-cluster (RPG-style along the road)
+                // Visual-only: draw a group of trees/bushes and optionally a small wooden cabin.
+                const variant = seededChoice(obj.x, y, 'building_forest', 3);
+                const clusterW = Math.max(80, obj.w);
+                const baseX = obj.x;
+
+                // ground patch under cluster
+                ctx.fillStyle = '#274f2b'; ctx.beginPath(); ctx.ellipse(baseX, y + 6, clusterW/2, 18, 0, 0, Math.PI*2); ctx.fill();
+
+                // draw multiple trees based on variant
+                const count = variant === 0 ? 3 : variant === 1 ? 4 : 5;
+                for (let i = 0; i < count; i++) {
+                    const offset = (i - (count-1)/2) * (clusterW / (count + 1)) + seededValue(baseX + i, y, 'off') * 8 - 4;
+                    const tx = baseX + offset;
+                    const ty = y - (10 + seededValue(baseX + i*3, y, 'h') * 14);
+                    // trunk
+                    ctx.fillStyle = '#5b3a21'; ctx.fillRect(tx - 6, ty + 6, 12, 26);
+                    ctx.strokeStyle = '#3b2416'; ctx.lineWidth = 1.5; ctx.strokeRect(tx - 6, ty + 6, 12, 26);
+                    // canopy - layered circles for RPG feel
+                    const c1 = seededChoice(tx, ty, 'col', 3);
+                    const colors = ['#2f9e44','#16a34a','#4ade80'];
+                    ctx.fillStyle = colors[c1]; ctx.beginPath(); ctx.ellipse(tx, ty - 4, 26, 22, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = shade(colors[c1], -10); ctx.beginPath(); ctx.ellipse(tx - 8, ty - 2, 12, 10, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.strokeStyle = 'rgba(0,0,0,0.16)'; ctx.lineWidth = 1.2; ctx.stroke();
                 }
-                // rooftop accent
-                if (variant === 0) { ctx.fillStyle = '#ef4444'; ctx.fillRect(obj.x - obj.w/2, y - obj.h/2 - 12, obj.w, 10); }
-                else if (variant === 1) { ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.moveTo(obj.x - obj.w/2, y - obj.h/2); ctx.lineTo(obj.x, y - obj.h/2 - 16); ctx.lineTo(obj.x + obj.w/2, y - obj.h/2); ctx.fill(); }
+
+                // small wooden cabin accent for one variant (visual-only)
+                if (variant === 1) {
+                    const cx = baseX + clusterW*0.22;
+                    const cy = y - 6;
+                    ctx.fillStyle = '#8b5e34'; ctx.fillRect(cx - 18, cy - 12, 36, 20);
+                    ctx.strokeStyle = '#3b2416'; ctx.lineWidth = 1.5; ctx.strokeRect(cx - 18, cy - 12, 36, 20);
+                    ctx.fillStyle = '#6b4226'; ctx.beginPath(); ctx.moveTo(cx - 20, cy - 12); ctx.lineTo(cx, cy - 28); ctx.lineTo(cx + 20, cy - 12); ctx.closePath(); ctx.fill(); ctx.stroke();
+                }
             } else if (obj.type === 'tree') {
                 // visual-only: cleaner tree with trunk, canopy and outline; deterministic variant
                 const tVar = seededChoice(obj.x, y, 'tree', 4);
