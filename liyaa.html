@@ -1621,39 +1621,60 @@
 
             // --- JIKA TIDAK ADA GAMBAR, GAMBAR BENTUK DEFAULT (KODE LAMA) ---
             if (obj.type === 'building') {
-                // Replace building visuals with a forest-cluster (RPG-style along the road)
-                // Visual-only: draw a group of trees/bushes and optionally a small wooden cabin.
-                const variant = seededChoice(obj.x, y, 'building_forest', 3);
-                const clusterW = Math.max(80, obj.w);
+                // Visual-only: RPG-city facade along the road (shops, signs, lamp posts)
+                const variant = seededChoice(obj.x, y, 'building_city', 4);
+                const facadeW = Math.max(80, obj.w);
                 const baseX = obj.x;
+                const baseY = y;
 
-                // ground patch under cluster
-                ctx.fillStyle = '#274f2b'; ctx.beginPath(); ctx.ellipse(baseX, y + 6, clusterW/2, 18, 0, 0, Math.PI*2); ctx.fill();
+                // main facade block
+                const facadeH = Math.max(60, Math.min(160, obj.h));
+                const left = baseX - facadeW/2;
+                const top = baseY - facadeH;
+                ctx.fillStyle = obj.color || '#f3f4f6';
+                ctx.beginPath(); ctx.roundRect(left, top, facadeW, facadeH, 6); ctx.fill();
+                ctx.lineWidth = 2; ctx.strokeStyle = '#0f172a'; ctx.strokeRect(left, top, facadeW, facadeH);
 
-                // draw multiple trees based on variant
-                const count = variant === 0 ? 3 : variant === 1 ? 4 : 5;
-                for (let i = 0; i < count; i++) {
-                    const offset = (i - (count-1)/2) * (clusterW / (count + 1)) + seededValue(baseX + i, y, 'off') * 8 - 4;
-                    const tx = baseX + offset;
-                    const ty = y - (10 + seededValue(baseX + i*3, y, 'h') * 14);
-                    // trunk
-                    ctx.fillStyle = '#5b3a21'; ctx.fillRect(tx - 6, ty + 6, 12, 26);
-                    ctx.strokeStyle = '#3b2416'; ctx.lineWidth = 1.5; ctx.strokeRect(tx - 6, ty + 6, 12, 26);
-                    // canopy - layered circles for RPG feel
-                    const c1 = seededChoice(tx, ty, 'col', 3);
-                    const colors = ['#2f9e44','#16a34a','#4ade80'];
-                    ctx.fillStyle = colors[c1]; ctx.beginPath(); ctx.ellipse(tx, ty - 4, 26, 22, 0, 0, Math.PI*2); ctx.fill();
-                    ctx.fillStyle = shade(colors[c1], -10); ctx.beginPath(); ctx.ellipse(tx - 8, ty - 2, 12, 10, 0, 0, Math.PI*2); ctx.fill();
-                    ctx.strokeStyle = 'rgba(0,0,0,0.16)'; ctx.lineWidth = 1.2; ctx.stroke();
+                // ground awning / shop front
+                ctx.fillStyle = shade(obj.color || '#f3f4f6', -12);
+                ctx.fillRect(left, top + facadeH - 26, facadeW, 26);
+                ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.strokeRect(left, top + facadeH - 26, facadeW, 26);
+
+                // door in center
+                const doorW = Math.max(20, Math.floor(facadeW * 0.18));
+                const doorH = 26;
+                ctx.fillStyle = '#5b3a21'; ctx.fillRect(baseX - doorW/2, top + facadeH - doorH - 4, doorW, doorH);
+                ctx.strokeStyle = '#3b2416'; ctx.strokeRect(baseX - doorW/2, top + facadeH - doorH - 4, doorW, doorH);
+
+                // window grid above
+                const cols = variant === 0 ? 3 : variant === 1 ? 2 : variant === 2 ? 4 : 3;
+                const rows = Math.max(2, Math.floor((facadeH - 50) / 30));
+                const winW = Math.min(20, Math.max(10, Math.floor((facadeW - 20) / (cols * 1.2))));
+                const winH = Math.min(18, Math.max(8, Math.floor((facadeH - 50) / (rows * 1.2))));
+                ctx.fillStyle = '#bae6fd'; ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 1;
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const ix = left + 10 + c * (facadeW / cols);
+                        const iy = top + 10 + r * (facadeH / rows);
+                        ctx.beginPath(); ctx.roundRect(ix, iy, winW, winH, 3); ctx.fill(); ctx.stroke();
+                    }
                 }
 
-                // small wooden cabin accent for one variant (visual-only)
-                if (variant === 1) {
-                    const cx = baseX + clusterW*0.22;
-                    const cy = y - 6;
-                    ctx.fillStyle = '#8b5e34'; ctx.fillRect(cx - 18, cy - 12, 36, 20);
-                    ctx.strokeStyle = '#3b2416'; ctx.lineWidth = 1.5; ctx.strokeRect(cx - 18, cy - 12, 36, 20);
-                    ctx.fillStyle = '#6b4226'; ctx.beginPath(); ctx.moveTo(cx - 20, cy - 12); ctx.lineTo(cx, cy - 28); ctx.lineTo(cx + 20, cy - 12); ctx.closePath(); ctx.fill(); ctx.stroke();
+                // signboard above awning
+                ctx.fillStyle = '#fde047'; ctx.beginPath(); ctx.roundRect(left + 6, top + facadeH - 46, facadeW - 12, 18, 4); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#111827'; ctx.font = '600 12px Poppins'; ctx.textAlign = 'center'; ctx.fillText(variant === 2 ? 'APOTIK' : variant === 1 ? 'TOKO' : 'KIOS', baseX, top + facadeH - 32);
+
+                // street lamp left
+                const lampX = left - 24; const lampY = top + facadeH - 12;
+                ctx.fillStyle = '#374151'; ctx.fillRect(lampX - 3, lampY - 60, 6, 60);
+                ctx.beginPath(); ctx.arc(lampX, lampY - 66, 8, 0, Math.PI*2); ctx.fillStyle = '#fde68a'; ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.stroke();
+
+                // optional kiosk / vendor for variant
+                if (variant === 3) {
+                    const kx = left + facadeW*0.68; const ky = top + facadeH - 18;
+                    ctx.fillStyle = '#b45309'; ctx.fillRect(kx - 16, ky - 12, 32, 12);
+                    ctx.strokeStyle = '#7c2d12'; ctx.strokeRect(kx - 16, ky - 12, 32, 12);
+                    ctx.fillStyle = '#111827'; ctx.font = '600 10px Poppins'; ctx.textAlign = 'center'; ctx.fillText('WARUNG', kx, ky - 4);
                 }
             } else if (obj.type === 'tree') {
                 // visual-only: cleaner tree with trunk, canopy and outline; deterministic variant
