@@ -1,0 +1,2740 @@
+ push ini ke repository<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Petualangan Fisika 2D</title>
+    <!-- Load Firebase config FIRST -->
+    <script src="firebase-config.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background-color: #22c55e; /* Warna rumput */
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        
+        #game-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+            cursor: crosshair;
+            background-color: #22c55e;
+        }
+
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; pointer-events: none;
+        }
+
+        .pointer-events-auto { pointer-events: auto; }
+
+        /* UI Panels Optimized for Landscape */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border: 3px solid #000;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+            border-radius: 1rem;
+            max-height: 90vh;
+            overflow-y: auto; /* Allow scrolling globally */
+        }
+
+        /* Special style for Home Screen */
+        #screen-home.glass-panel {
+            background: rgba(255, 255, 255, 0.0);
+            border: 3px solid #000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .btn-3d {
+            transition: transform 0.1s;
+            border: 2px solid #000;
+            border-bottom: 6px solid #000;
+            cursor: pointer;
+        }
+        .btn-3d:active {
+            transform: translateY(4px);
+            border-bottom: 2px solid #000;
+        }
+
+        /* Start card with image background */
+        .start-card {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 4px solid #000;
+            border-radius: 0.75rem;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+            padding: 1rem;
+            color: #000;
+        }
+        .start-card .overlay { position: absolute; inset: 0; border-radius: 0.75rem; }
+        .start-card .content { position: relative; z-index: 10; }
+
+        .dpad-btn {
+            width: 64px; height: 64px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; border: 3px solid #000;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+            touch-action: manipulation;
+            cursor: pointer;
+        }
+        .dpad-btn:active { background: #fbbf24; transform: translate(2px, 2px); box-shadow: 2px 2px 0px rgba(0,0,0,0.2); }
+
+        .hidden { display: none !important; }
+        
+        @keyframes floatText {
+            0% { transform: translateY(0) rotate(-10deg); opacity: 1; }
+            100% { transform: translateY(-80px) rotate(10deg); opacity: 0; }
+        }
+        .oof-text {
+            position: absolute;
+            color: #ef4444;
+            font-weight: 900;
+            font-size: 5rem;
+            text-shadow: 3px 3px 0px black;
+            animation: floatText 1.2s forwards;
+            pointer-events: none;
+            z-index: 50;
+            white-space: nowrap;
+        }
+
+        @keyframes titleBounce {
+            0%, 100% { transform: translateY(0) rotate(-2deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+        .game-title {
+            font-family: 'Poppins', sans-serif;
+            animation: titleBounce 3s infinite ease-in-out;
+            -webkit-text-stroke: 2px black;
+            text-shadow: 4px 4px 0px rgba(0,0,0,1);
+        }
+        
+        /* Cloud Animation for Main Menu */
+        @keyframes floatCloud {
+            0% { transform: translateX(0px); }
+            50% { transform: translateX(20px); }
+            100% { transform: translateX(0px); }
+        }
+        .cloud-anim {
+            animation: floatCloud 5s ease-in-out infinite;
+        }
+
+        /* Map Landscape - Robbery Bob Style */
+        #map-board {
+            /* Use the local 640×300 map image for a pixel-perfect fit */
+            background-image: url('PETA-640x300.png');
+            background-size: 100% 100%; /* exact fit for 640×300 container */
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 4px solid #000; 
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.1);
+            position: relative; 
+            width: 100%; 
+            max-width: 640px; 
+            height: 300px;
+            border-radius: 1rem; 
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        /* Decorative Map Elements (Houses, Trees) */
+        .map-deco {
+            position: absolute; pointer-events: none; z-index: 1;
+        }
+        .map-pin {
+            /* Hidden per request: remove visible level circles from map */
+            position: absolute; width: 56px; height: 56px; display: none; pointer-events: none;
+            background-color: #fde047; border: 3px solid #000;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1.25rem; /* Font lebih besar */
+            color: #000; cursor: pointer; z-index: 10;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.5); /* Shadow lebih tebal */
+            transform: translate(-50%, -50%); /* center pin at its left/top coords */
+        }
+        /* When map-board has class .show-pins the pins become visible */
+        /* (pin overlays and hotspots removed for a cleaner map UI) */
+        .map-pin:hover { transform: translate(-50%, -50%) scale(1.15); } /* Hover lebih nendang */
+        
+        /* ANIMASI BERDENYUT UNTUK LEVEL SAAT INI */
+        @keyframes pinPulse {
+            0% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7), 4px 4px 0px rgba(0,0,0,0.5); transform: scale(1); }
+            70% { box-shadow: 0 0 0 15px rgba(250, 204, 21, 0), 4px 4px 0px rgba(0,0,0,0.5); transform: scale(1.1); }
+            100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0), 4px 4px 0px rgba(0,0,0,0.5); transform: scale(1); }
+        }
+        
+        .map-pin.current {
+            background-color: #ffffff; /* Putih agar kontras */
+            border-color: #ca8a04;     /* Border emas gelap */
+            color: #ca8a04;
+            animation: pinPulse 2s infinite; /* Animasi aktif */
+            z-index: 20; /* Selalu di atas */
+        }
+
+        .map-pin.locked { background-color: #9ca3af; color: #4b5563; cursor: not-allowed; transform: scale(0.9); }
+        .map-pin.completed { background-color: #22c55e; color: white; border-color: #14532d; }
+
+          /* Level position helpers (placed on road center as requested)
+              Coordinates follow the single continuous snake road from left→right */
+          .level-1 { left: 60px;  top: 250px; }
+          .level-2 { left: 160px; top: 250px; }
+          .level-3 { left: 260px; top: 250px; }
+          .level-4 { left: 360px; top: 250px; }
+          /* Fine-tuned positions for smooth road alignment */
+          .level-5 { left: 405px; top: 205px; }
+          .level-6 { left: 485px; top: 190px; }
+          .level-7 { left: 460px; top: 145px; }
+          .level-8 { left: 380px; top: 150px; }
+          .level-9 { left: 300px; top: 170px; }
+          .finish   { left: 525px; top: 85px; }
+        .map-pin.finish { background-color: #f97316; }
+        
+        .map-pin-label {
+            position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
+            font-size: 11px; font-weight: bold;
+            background: white; padding: 2px 6px; border: 2px solid black; border-radius: 4px; white-space: nowrap;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+            z-index: 25;
+        }
+        
+        .svg-icon { width: 100%; height: 100%; }
+
+        /* Header box for quiz level positioned at top-center of viewport */
+        .quiz-level-header {
+            position: fixed;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            background: #fbbf24; /* yellow-400 */
+            color: #000;
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 3px solid #000;
+            font-weight: 900;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+            text-align: center;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none; /* allow clicks through to modal */
+        }
+
+        /* Simulation Styles */
+        .sim-stage {background:#fff;border:2px solid #ddd;border-radius:6px;padding:8px;display:flex;flex-direction:column;gap:8px;}
+        .sim-canvas {background:#eef4fb;border:1px solid #cfdbea;border-radius:4px;width:100%;height:150px;}
+        .sim-row {margin-bottom:4px; display:flex; align-items:center; gap: 8px; font-size: 11px;}
+        .sim-row label {font-weight:bold; display:flex; align-items:center; gap:4px;}
+        .sim-row input[type=range]{flex:1;}
+        .sim-row input[type=number]{width:60px; padding:2px; border:1px solid #ccc; border-radius:3px;}
+        .sim-btn {padding:4px 10px;border-radius:4px;border:1px solid #2b6cb0;background:#3182ce;color:white;cursor:pointer;font-size:11px;font-weight:bold;}
+        .sim-btn.secondary {background:#e2e8f0;color:#111;border:1px solid #cbd5e1;}
+        .sim-stats {background:#f8fafc;padding:6px;border-radius:4px;border:1px solid #e6eef7;font-size:10px;font-family:monospace;}
+        .sim-flex {display:flex;gap:8px;align-items:center;}
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+</head>
+<body>
+
+    <canvas id="game-canvas"></canvas>
+    <div id="effect-layer" class="absolute inset-0 pointer-events-none z-40 overflow-hidden"></div>
+
+    <div id="ui-layer" class="flex flex-col justify-between p-2 md:p-4 h-full">
+        
+        <!-- HUD -->
+        <div id="hud" class="flex justify-between w-full hidden items-start pointer-events-none z-30">
+            <div class="glass-panel px-3 py-1 pointer-events-auto flex items-center gap-2 shadow-lg bg-white scale-90 origin-top-left">
+                <div id="avatar-icon" class="w-10 h-10 bg-blue-100 rounded-lg p-0 border-2 border-black overflow-hidden flex items-center justify-center"></div>
+                <div>
+                    <div class="text-[10px] text-gray-500 font-black tracking-wider">KARAKTER</div>
+                    <div id="player-name-display" class="font-black text-lg text-gray-800 leading-none">Noob</div>
+                </div>
+                <div class="border-l-2 border-black pl-2 ml-1">
+                    <div class="text-[10px] text-gray-500 font-black tracking-wider">SKOR</div>
+                    <div id="score-display" class="font-black text-lg text-gray-800 leading-none">0</div>
+                </div>
+            </div>
+            
+            <div class="glass-panel px-3 py-1 flex items-center text-black font-black shadow-lg mb-2 bg-yellow-300 pointer-events-auto scale-90 origin-top-right">
+                <span class="mr-2 text-xs uppercase">Misi:</span>
+                <span id="objective-text" class="bg-white px-2 py-0.5 rounded border-2 border-black text-xs">LEVEL 1</span>
+            </div>
+        </div>
+
+        <!-- SCREENS -->
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-20 p-4">
+            
+            <!-- HOME (SCROLLABLE CONTENT) -->
+            <div id="screen-home" class="glass-panel p-0 w-full max-w-4xl mx-auto pointer-events-auto relative overflow-hidden md:overflow-visible">
+                
+                <!-- Cityscape Background (SVG) -->
+                <div class="absolute inset-0 z-0 bg-blue-200 overflow-hidden rounded-xl pointer-events-none">
+                    <svg width="100%" height="100%" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#E0F7FA;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#skyGrad)"/>
+                        <circle cx="85%" cy="20%" r="40" fill="#FDB813" stroke="#FFA500" stroke-width="2"/>
+                        <g class="cloud-anim" fill="white" opacity="0.8">
+                            <circle cx="10%" cy="20%" r="20"/>
+                            <circle cx="15%" cy="25%" r="25"/>
+                            <circle cx="20%" cy="20%" r="20"/>
+                            <circle cx="60%" cy="15%" r="15"/>
+                            <circle cx="65%" cy="18%" r="20"/>
+                            <circle cx="70%" cy="15%" r="15"/>
+                        </g>
+                        <rect x="5%" y="50%" width="10%" height="50%" fill="#94a3b8"/>
+                        <rect x="20%" y="40%" width="15%" height="60%" fill="#64748b"/>
+                        <rect x="40%" y="55%" width="10%" height="45%" fill="#94a3b8"/>
+                        <rect x="60%" y="45%" width="12%" height="55%" fill="#64748b"/>
+                        <rect x="80%" y="50%" width="15%" height="50%" fill="#94a3b8"/>
+                        <rect x="0%" y="60%" width="12%" height="40%" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
+                        <rect x="15%" y="65%" width="10%" height="35%" fill="#e2e8f0" stroke="#475569" stroke-width="2"/>
+                        <rect x="30%" y="55%" width="18%" height="45%" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
+                        <rect x="55%" y="62%" width="15%" height="38%" fill="#e2e8f0" stroke="#475569" stroke-width="2"/>
+                        <rect x="75%" y="58%" width="20%" height="42%" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
+                        <rect x="32%" y="60%" width="4%" height="5%" fill="#fef08a" />
+                        <rect x="38%" y="60%" width="4%" height="5%" fill="#fef08a" />
+                        <rect x="32%" y="70%" width="4%" height="5%" fill="#fef08a" />
+                        <rect x="38%" y="70%" width="4%" height="5%" fill="#fef08a" />
+                        <rect x="0" y="85%" width="100%" height="15%" fill="#374151"/>
+                        <line x1="0" y1="92%" x2="100%" y2="92%" stroke="white" stroke-width="4" stroke-dasharray="20,20"/>
+                    </svg>
+                    <div class="absolute inset-0 bg-white/70 backdrop-blur-sm"></div>
+                </div>
+
+                <!-- Content Container - Scrollable -->
+                <div class="relative z-10 p-6 flex flex-col md:flex-row items-center justify-around gap-8 min-h-full overflow-y-auto">
+                    <div class="flex-1 md:text-left text-center shrink-0">
+                        <h1 class="game-title text-4xl md:text-6xl font-black text-blue-500 leading-none mb-2">
+                            PHYSICS<br>
+                            <span class="text-yellow-400">ADVENTURE</span>
+                        </h1>
+                        <h2 class="text-lg md:text-2xl font-black text-gray-800 border-b-4 border-black inline-block pb-1 mb-2">
+                            Momentum & Impulse
+                        </h2>
+                        <p class="text-xs md:text-sm font-bold text-gray-600 bg-yellow-100 p-2 rounded border border-black shadow-sm mt-2 italic inline-block">
+                            "Run with Speed, Win with Physics."
+                        </p>
+                    </div>
+                    
+                    <div class="flex-1 w-full max-w-sm space-y-4 shrink-0 pb-4">
+                        <div class="bg-white p-4 rounded-xl border-4 border-black shadow-lg">
+                            <div class="start-card relative" style="background-image: url('assets/lkpd-presentasi.png');">
+                                <div class="overlay bg-white/40 backdrop-blur-sm pointer-events-none"></div>
+                                <div class="content">
+                                    <input type="text" id="name-input" placeholder="Enter your name..." class="w-full text-center p-3 rounded-lg border-2 border-black focus:bg-yellow-50 outline-none text-lg font-bold mb-3 bg-white/90">
+                                    <button id="btn-start" onclick="goToCharSelect()" class="btn-3d bg-blue-500 text-white font-black py-3 px-6 rounded-lg text-xl w-full uppercase shadow-md opacity-50 cursor-not-allowed" disabled>
+                                        START GAME
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="leaderboard-container" class="bg-gray-100 rounded-xl p-3 border-4 border-black text-left h-48 overflow-y-auto">
+                            <h3 class="text-xs font-black text-center text-black mb-2 uppercase bg-yellow-300 border border-black rounded p-0.5 sticky top-0 z-10 shadow-sm">🏆 Top 5 Leaderboard</h3>
+                            <ol id="leaderboard-list" class="list-decimal list-inside space-y-1 text-gray-800 font-bold text-xs">
+                                <li class="p-1 bg-white border border-black rounded text-center">Loading...</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAP -->
+            <div id="screen-map" class="hidden glass-panel p-4 text-center w-full max-w-2xl mx-auto pointer-events-auto">
+                <h1 class="text-2xl font-black text-blue-600 mb-2 tracking-tighter border-b-4 border-black inline-block px-4">PETA KOTA</h1>
+                <p class="text-sm font-bold text-gray-700 mb-4 bg-yellow-100 border border-black p-2 rounded-lg inline-block shadow-sm">
+                    Selesaikan 9 tantangan di peta untuk mencapai garis FINISH!
+                </p>
+                
+                <div id="map-board">
+                    <svg class="absolute inset-0 w-full h-full z-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300">
+                        <!-- Map decorations removed (buildings/trees/circles) per request -->
+
+
+                    <!-- Level pin elements removed per request (no overlay circles) -->
+                </div>
+                <div class="mt-4">
+                    <button id="map-next-btn" onclick="mapNext()" class="btn-3d bg-yellow-400 text-black font-black py-3 px-6 rounded-xl shadow-md">NEXT</button>
+                </div>
+            </div>
+
+            <!-- CHAR SELECT -->
+            <div id="screen-char" class="hidden glass-panel p-6 text-center max-w-4xl mx-auto pointer-events-auto">
+                <h2 class="text-2xl font-black text-black mb-6">Pilih Avatar Kamu</h2>
+                <div class="grid grid-cols-2 gap-8">
+                    <!-- Neko Chan -->
+                    <div onclick="selectChar('neko')" class="cursor-pointer bg-white p-4 rounded-xl border-4 border-black hover:bg-pink-100 transition-transform hover:-translate-y-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group flex flex-col items-center justify-center">
+                        <div class="w-32 h-32 mb-2 transform group-hover:scale-110 transition-transform">
+                             <!-- Simple SVG Preview for Neko -->
+                             <svg viewBox="0 0 100 100" class="svg-icon">
+                                <circle cx="50" cy="50" r="35" fill="#fce7f3" stroke="black" stroke-width="2"/>
+                                <!-- Cat Ears -->
+                                <path d="M20,30 L30,10 L50,30 Z" fill="#ec4899" stroke="black" stroke-width="2"/>
+                                <path d="M80,30 L70,10 L50,30 Z" fill="#ec4899" stroke="black" stroke-width="2"/>
+                                <!-- Face -->
+                                <circle cx="35" cy="55" r="4" fill="#be185d"/>
+                                <circle cx="65" cy="55" r="4" fill="#be185d"/>
+                                <path d="M45,65 Q50,70 55,65" fill="none" stroke="black" stroke-width="2"/>
+                             </svg>
+                        </div>
+                        <div class="font-black text-xl text-pink-600">Lucy</div>
+                        
+                    </div>
+                    <!-- Star Kun -->
+                    <div onclick="selectChar('star')" class="cursor-pointer bg-white p-4 rounded-xl border-4 border-black hover:bg-blue-100 transition-transform hover:-translate-y-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group flex flex-col items-center justify-center">
+                          <div class="w-32 h-32 mb-2 transform group-hover:scale-110 transition-transform">
+                            <!-- Simple SVG Preview for Star -->
+                            <svg viewBox="0 0 100 100" class="svg-icon">
+                                <circle cx="50" cy="50" r="35" fill="#e0f2fe" stroke="black" stroke-width="2"/>
+                                <!-- Star Hair Clip -->
+                                <path d="M20,25 L30,40 L10,40 Z" fill="#facc15" stroke="black" stroke-width="2" transform="rotate(-30 20 25)"/>
+                                <!-- Spiky Hair -->
+                                <path d="M20,40 L30,10 L50,35 L70,10 L80,40" fill="none" stroke="#0ea5e9" stroke-width="4" stroke-linecap="round"/>
+                                <!-- Face -->
+                                <circle cx="35" cy="55" r="4" fill="#0284c7"/>
+                                <circle cx="65" cy="55" r="4" fill="#0284c7"/>
+                                <path d="M45,65 Q50,70 55,65" fill="none" stroke="black" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="font-black text-xl text-blue-600">Luke</div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIDEO MODAL -->
+            <div id="screen-video" class="hidden glass-panel w-full max-w-3xl mx-auto p-6 pointer-events-auto relative shadow-2xl z-50 flex flex-col items-center">
+                <div class="absolute -top-4 bg-blue-600 text-white px-6 py-2 rounded-full border-2 border-black font-black tracking-wider shadow-md">
+                    🎥 OBSERVASI FISIKA
+                </div>
+                <h3 class="text-xl font-black mt-4 mb-2 text-center">Analisis Kecelakaan</h3>
+                <p id="video-narrative" class="text-sm font-bold text-gray-700 mb-4 text-center max-w-xl whitespace-pre-line"></p>
+                
+                <div class="w-full max-w-lg bg-black rounded-lg overflow-hidden border-4 border-gray-800 shadow-lg mb-6 relative aspect-video flex items-center justify-center">
+                    <video id="level-video" width="100%" height="100%" controls class="block" poster="https://cdn.pixabay.com/photo/2017/06/27/06/38/crash-test-2446271_1280.jpg">
+                        <source src="https://cdn.videvo.net/videvo_files/converted/2018_01/preview/171124_H1_006.mp4" type="video/mp4">
+                        <div class="text-white p-4">Browser Anda tidak mendukung tag video.</div>
+                    </video>
+                </div>
+
+                <button onclick="proceedToQuestion()" class="btn-3d bg-yellow-400 text-black font-black py-3 px-8 rounded-xl text-xl uppercase shadow-black border-2 border-black animate-pulse">
+                    Lanjutkan ke Soal ➡️
+                </button>
+            </div>
+
+            <!-- QUIZ MODAL -->
+            <div id="screen-quiz" class="hidden glass-panel w-full max-w-5xl mx-auto p-4 md:p-6 pointer-events-auto relative shadow-2xl" oncontextmenu="return false;">
+                <div class="quiz-level-header" aria-hidden="true"><span>🚧</span> TANTANGAN <span id="quiz-level-num">1</span></div>
+                
+                <div id="quiz-content" class="mt-4">
+                    <div class="flex flex-col md:flex-row gap-6 items-stretch justify-center">
+                            
+                            <!-- KOLOM KIRI: Visual / Cutscene / Simulasi -->
+                            <div id="quiz-options-cutscene" class="hidden w-full md:w-7/12 flex-shrink-0 border-b-2 md:border-b-0 md:border-r-2 border-dashed border-gray-300 pb-4 md:pb-0 md:pr-4 bg-gray-50 rounded flex flex-col justify-center">
+                                <!-- Konten simulasi akan disuntikkan di sini oleh JS -->
+                            </div>
+
+                            <!-- KOLOM KANAN: Pertanyaan & Input -->
+                            <div class="w-full flex-grow flex flex-col gap-3 justify-center">
+                                <div id="quiz-question-container" class="bg-blue-100 border-2 border-black p-4 rounded-xl text-black hidden shadow-sm">
+                                    <p id="quiz-question" class="font-bold text-base md:text-lg leading-snug text-center">Memuat pertanyaan...</p>
+                                </div>
+
+                                <!-- Opsi Jawaban -->
+                                <div class="flex-grow flex flex-col justify-center gap-3">
+                                    <!-- MCQ -->
+                                    <div id="quiz-options-mcq" class="space-y-2 hidden"></div>
+
+                                    <!-- Slider -->
+                                    <div id="quiz-options-slider" class="space-y-4 hidden bg-gray-100 p-4 rounded-xl border-2 border-black">
+                                        <div class="flex justify-between font-black text-xs uppercase tracking-widest">
+                                            <span id="slider-label-left" class="text-blue-600">Kiri</span>
+                                            <span id="slider-label-right" class="text-red-600">Kanan</span>
+                                        </div>
+                                        <input type="range" id="quiz-slider" min="1" max="2" value="1.5" class="w-full accent-black h-6 bg-gray-300 rounded-full appearance-none border-2 border-black cursor-pointer">
+                                        <div class="text-center">
+                                            <span id="slider-value" class="text-2xl font-black text-white bg-black px-4 py-1 rounded-lg shadow-md">1.5</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Input Kalkulasi (Single) -->
+                                    <div id="quiz-options-input" class="hidden space-y-2 bg-gray-100 p-4 rounded-xl border-2 border-black">
+                                        <label class="block text-xs font-black text-gray-500 uppercase tracking-wider text-center">Masukkan Jawaban (Angka):</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="text" id="quiz-number-input" placeholder="0" class="w-full p-3 text-2xl font-black text-center border-2 border-black rounded-lg focus:bg-yellow-50 outline-none shadow-inner">
+                                            <span id="quiz-input-unit" class="text-sm font-bold text-gray-500 w-20">Unit</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- NEW: Input Esai Singkat (Teks) -->
+                                    <div id="quiz-options-text" class="hidden space-y-2 bg-gray-100 p-4 rounded-xl border-2 border-black">
+                                        <label class="block text-xs font-black text-gray-500 uppercase tracking-wider text-center">Jawab Singkat:</label>
+                                        <input type="text" id="quiz-text-input" placeholder="Ketik jawabanmu di sini..." class="w-full p-3 text-lg font-bold text-center border-2 border-black rounded-lg focus:bg-yellow-50 outline-none shadow-inner" autocomplete="off">
+                                        <p class="text-[10px] text-gray-500 text-center italic">*Pastikan ejaan benar</p>
+                                    </div>
+
+                                     <!-- Input Kalkulasi (Multi) -->
+                                     <div id="quiz-options-multi-input" class="hidden space-y-3 bg-gray-100 p-4 rounded-xl border-2 border-black"></div>
+
+                                     <!-- Kartu Esai Multi (Level 5) -->
+                                     <div id="quiz-options-cards" class="hidden space-y-3 bg-gray-100 p-4 rounded-xl border-2 border-black"></div>
+                                </div>
+                                
+                                <!-- Tombol & Feedback -->
+                                <div class="mt-auto">
+                                    <button id="quiz-submit-btn" onclick="checkAnswer()" class="btn-3d bg-green-500 text-white font-black py-3 px-6 rounded-xl text-xl w-full uppercase shadow-black border-2 border-black hover:bg-green-400">
+                                        JAWAB SEKARANG
+                                    </button>
+                                    <p id="quiz-feedback" class="text-center font-black mt-3 min-h-[20px] text-sm leading-tight"></p>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GAME OVER -->
+            <div id="screen-gameover" class="hidden glass-panel p-8 text-center max-w-md mx-auto pointer-events-auto">
+                <div class="text-8xl mb-4 animate-bounce">💀</div>
+                <h1 class="text-5xl font-black text-red-600 mb-4 tracking-tighter" style="-webkit-text-stroke: 2px black;">GAME OVER</h1>
+                <button onclick="restartGame()" class="btn-3d bg-yellow-400 text-black font-black py-4 px-12 rounded-xl text-2xl w-full uppercase border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    Coba Lagi
+                </button>
+            </div>
+
+            <!-- PESAN FINISH -->
+            <div id="screen-finish-message" class="hidden glass-panel p-8 text-center max-w-lg mx-auto pointer-events-auto">
+                <div class="text-8xl mb-4 animate-bounce">🏆</div>
+                <h1 class="text-3xl font-black text-blue-500 mb-4 tracking-tighter" style="-webkit-text-stroke: 2px black;">
+                    Congratulations, <span id="finish-player-name">Pemain</span>!
+                </h1>
+                
+                <!-- NEW: STATS GRID -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                     <div class="bg-green-100 p-3 rounded-xl border-4 border-green-600 shadow-md">
+                        <div class="text-xs uppercase font-black text-green-800">Jawaban Benar</div>
+                        <div id="finish-correct-count" class="text-4xl font-black text-green-600">0</div>
+                     </div>
+                     <div class="bg-red-100 p-3 rounded-xl border-4 border-red-600 shadow-md">
+                        <div class="text-xs uppercase font-black text-red-800">Jawaban Salah</div>
+                        <div id="finish-wrong-count" class="text-4xl font-black text-red-600">0</div>
+                     </div>
+                </div>
+
+                <!-- NEW: REPORT LIST -->
+                <div class="bg-white border-2 border-black rounded-xl p-3 mb-4 max-h-32 overflow-y-auto text-left shadow-inner">
+                    <h3 class="font-black text-xs uppercase border-b-2 border-gray-200 mb-2 pb-1 sticky top-0 bg-white">Rincian Jawaban:</h3>
+                    <ul id="finish-details-list" class="space-y-2 text-xs">
+                        <!-- Items injected by JS -->
+                    </ul>
+                </div>
+
+                <div class="flex gap-2 justify-center mb-6">
+                    <button onclick="downloadReport()" class="btn-3d bg-purple-500 text-white font-bold py-2 px-4 rounded-lg text-lg border-2 border-black flex items-center gap-2 hover:bg-purple-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        📄 Download Rapor
+                    </button>
+                </div>
+
+                <div class="text-sm md:text-base text-left bg-yellow-50 border-4 border-black p-3 rounded-xl mb-6 space-y-1 font-bold text-gray-800 shadow-inner">
+                    <p>Total Skor Akhir: <strong id="finish-player-score" class="text-xl text-blue-600">0</strong></p>
+                </div>
+
+                <button onclick="goHome()" class="btn-3d bg-blue-500 text-white font-black py-4 px-12 rounded-xl text-2xl w-full uppercase border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    Kembali ke Menu
+                </button>
+            </div>
+
+            <!-- LEVEL UNLOCKED -->
+            <div id="screen-nextlevel" class="hidden glass-panel p-8 text-center max-w-md mx-auto pointer-events-auto">
+                <div class="text-8xl mb-4 animate-bounce">🗺️</div>
+                <h1 class="text-4xl font-black text-blue-500 mb-4 tracking-tighter" style="-webkit-text-stroke: 2px black;">LEVEL TERBUKA!</h1>
+                
+                <div class="bg-yellow-100 border-4 border-black p-4 rounded-xl mb-6">
+                    <div class="text-sm uppercase font-bold text-gray-600">Kamu telah membuka:</div>
+                    <div id="next-level-name" class="text-3xl font-black text-black">Level 2</div>
+                </div>
+    
+                <button onclick="closeNextLevelScreen()" class="btn-3d bg-blue-500 text-white font-black py-4 px-12 rounded-xl text-2xl w-full uppercase border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    LANJUTKAN
+                </button>
+            </div>
+
+            <!-- PERATURAN GAME -->
+            <div id="screen-rules" class="hidden glass-panel p-8 text-center max-w-lg mx-auto pointer-events-auto">
+                <h1 class="text-3xl font-black text-blue-600 mb-6 tracking-tighter" style="-webkit-text-stroke: 2px black;">PERATURAN GAME</h1>
+                
+                <ul class="text-left bg-yellow-50 border-4 border-black p-6 rounded-xl mb-8 space-y-4 text-sm md:text-base font-bold text-gray-800 list-none shadow-inner">
+                    <li class="flex items-start gap-3">
+                        <span class="text-2xl mt-[-2px]">🚗</span>
+                        <div><strong>Tujuan:</strong> Capai garis FINISH dengan menjawab semua tantangan fisika.</div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-2xl mt-[-2px]">🚧</span>
+                        <div><strong>Rintangan:</strong> Tabrak rintangan untuk memulai kuis tantangan.</div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-2xl mt-[-2px]">✅</span>
+                        <div><strong class="text-green-600">Jawaban Benar:</strong> Membuka gerbang dan menambah <strong class="text-green-600">(+10 Poin)</strong>.</div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-2xl mt-[-2px]">❌</span>
+                        <div><strong class="text-red-600">Jawaban Salah:</strong> Poin akan berkurang <strong class="text-red-600">(-5 Poin)</strong>. Tapi tenang, kamu bisa coba lagi!</div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-2xl mt-[-2px]">🏆</span>
+                        <div><strong>Skor:</strong> Kumpulkan poin sebanyak-banyaknya untuk masuk Leaderboard!</div>
+                    </li>
+                </ul>
+
+                <button onclick="startGame()" class="btn-3d bg-green-500 text-white font-black py-4 px-12 rounded-xl text-2xl w-full uppercase border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse">
+                    MULAI!
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Mobile Controls -->
+        <div id="dpad" class="hidden absolute bottom-4 left-4 z-30 pointer-events-auto opacity-80">
+            <div class="relative w-40 h-40">
+                <div id="dpad-up" class="dpad-btn absolute top-0 left-1/2 -translate-x-1/2 w-14 h-14 text-xl">⬆️</div>
+                <div id="dpad-left" class="dpad-btn absolute left-0 top-1/2 -translate-y-1/2 w-14 h-14 text-xl">⬅️</div>
+                <div id="dpad-right" class="dpad-btn absolute right-0 top-1/2 -translate-y-1/2 w-14 h-14 text-xl">➡️</div>
+                <div id="dpad-down" class="dpad-btn absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-14 text-xl">⬇️</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT FIREBASE & GAME LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, onSnapshot, collection, query, getDocs, limit, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- CONFIG & STATE ---
+        let db, auth, userId, unsubLeaderboard;
+        // Adjusted mainVol from 0 to -10 (quieter default)
+        // GANTI bgmSynth/bgmLoop dengan bgmPlayer
+        let mainVol, reverb, synthCorrect, synthWrong, synthLevelUp, bgmPlayer;
+        
+        // Setup global fallback for development environment if needed
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'physics-adventure';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+
+        // Constants
+        const TILE_SIZE = 40;
+        const ROAD_HEIGHT = 300; // Total lebar jalan (atas ke bawah)
+        const ROAD_HALF = ROAD_HEIGHT / 2;
+        
+        // --- NEW: SISTEM GAMBAR KUSTOM ---
+        const loadedImages = {}; // Tempat menyimpan gambar yang sudah di-download browser
+        
+        // KONFIGURASI LINK GAMBAR (GANTI LINK INI DENGAN RAW LINK GITHUB ANDA)
+        const imageSources = {
+            // Contoh: Mengganti bola hijau (tree) dengan gambar Pohon Kartun
+            // Link ini adalah contoh placeholder. Ganti dengan link raw github Anda.
+            'tree': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/185.png', // Contoh: Sudowoodo (mirip pohon)
+            
+            // Contoh: Mengganti kotak gedung dengan gambar Gedung
+            // 'building': 'https://raw.githubusercontent.com/username/repo/main/building.png',
+            
+            // Jika Anda ingin karakter pemain pakai gambar, isi ini:
+            // 'player_neko': 'LINK_GAMBAR_NEKO',
+            // 'player_star': 'LINK_GAMBAR_STAR'
+        };
+
+        const state = {
+            currentLevel: 1,
+            maxLevel: 1,
+            playerName: "Noob",
+            playerType: "neko", // Default to Neko
+            score: 0,
+            correctAnswers: 0, // NEW: Counter Benar
+            wrongAnswers: 0,   // NEW: Counter Salah
+            wrongStreak: 0,    // NEW: Counter kesalahan berturut-turut per pertanyaan
+            levelResults: [], // NEW: Menyimpan detail hasil per level
+            gameActive: false,
+            quizActive: false,
+            quizStartTime: 0,
+            gameFinished: false,
+            finishTime: 0,
+            crossingAction: null, // NEW STATE: Handles auto-pilot animation
+            player: { x: 0, y: 0, speed: 6, width: 40, height: 40, vx: 0, vy: 0, jumpOffset: 0 }, // Speed sedikit dinaikkan agar enak di tikungan
+            camera: { x: 0 },
+            startLineX: 0,
+            worldObjects: [],
+            triggers: [],
+            gates: [],
+            // --- URUTAN LEVEL BARU (MUDAH -> SUSAH) ---
+            checkpoints: [
+                // LEVEL 1: HITUNGAN MOMENTUM DASAR (p = mv) - PALING MUDAH
+                { 
+                    id: 1, x: 1000, type: 'calc-multi', visual: 'river', 
+                    question: "Sebuah benda mula-mula bergerak ke utara dengan kecepatan 6 m/s, lalu berbelok ke barat dengan kecepatan 8 m/s. Massa benda tersebut adalah 50 kg. Tentukan:\na. Nilai momentum total\nb. Arah momentum total (dalam derajat dari arah timur, 0° = timur, searah putaran positif).",
+                    sim: {},
+                    options: { 
+                        inputs: [
+                            { id: 'ans-p1-magnitude', label: 'Momentum total |p|', unit: 'kg·m/s', correctValue: 500, tolerance: 0.5 },
+                            { id: 'ans-p1-angle', label: 'Arah (deg dari timur, ccw)', unit: '°', correctValue: 143.13, tolerance: 0.5 }
+                        ],
+                        feedback: { correct: "Betul — gunakan komponen vektor dan arctan2 untuk sudut.", wrong: "Coba lagi — hitung p_x = m·v_x dan p_y = m·v_y lalu gabungkan." },
+                        explanation: "<strong>p</strong>_x = -400 kg·m/s (barat), <strong>p</strong>_y = +300 kg·m/s (utara). |<strong>p</strong>| = sqrt(400^2 + 300^2) = 500 kg·m/s. sudut = arctan2(300,-400) ≈ 143.13° (dari timur, ccw)."
+                    } 
+                },
+
+                // LEVEL 2: HITUNGAN IMPULS DASAR (I = Δp) - MUDAH
+                { 
+                    id: 2, x: 2000, type: 'calc', visual: 'cliff', 
+                    question: "Gambar berikut menunjukkan grafik resultan gaya (F) yang bekerja pada sebuah benda terhadap waktu (t). Tentukan besar impuls benda dalam selang waktu 3 - 5 sekon (N·s)!",
+                    sim: {
+                        type: 'image',
+                        src: 'https://raw.githubusercontent.com/lorrainemydth-gif/ICT-MEDIA-PEMBELAJARAN/f303b6da2643fc3d2bc2e76b4249e9c518e7b7eb/WhatsApp%20Image%202025-12-15%20at%208.08.45%20AM.jpeg'
+                    },
+                    options: { 
+                        input: { correctValue: 8/3, tolerance: 0.05, unit: 'N.s' },
+                        feedback: { correct: "Betul — impuls = luas area di bawah kurva antara 3–5 s (≈ 2.67 N·s).", wrong: "Coba lagi — hitung luas area di bawah kurva antara t=3 dan t=5 s (hasil ≈ 2.67 N·s)." }, 
+                        explanation: "Impuls = integral <strong>F</strong> dt; untuk kurva ini luasnya sama dengan 8/3 N·s ≈ 2.67 N·s. Anda dapat memasukkan 2.67 atau pecahan 8/3."
+                    } 
+                },
+
+                // LEVEL 3: HITUNGAN GAYA IMPULSIF - MEDIUM-MUDAH
+                { 
+                    id: 3, x: 3000, type: 'calc-multi', visual: 'spike', 
+                    question: "Bola kasti bermassa 150 gram dilempar horizontal ke arah kanan dengan kecepatan 6 m/s. Kemudian bola dipukul sehingga bergerak ke kiri dengan kecepatan 9 m/s. Tentukan:\na. Impuls yang diberikan pemukul pada bola\nb. Gaya rata-rata yang diberikan pemukul jika pemukul dan bola bersentuhan selama 2 sekon\nc. Percepatan rata-rata selama pemukul dan bola bersentuhan",
+                    sim: {}, 
+                    options: { 
+                        inputs: [
+                            { id: 'ans-impulse3', label: 'Impuls (N.s)', unit: 'N.s', correctValue: -2.25, tolerance: 0.01 },
+                            { id: 'ans-force3', label: 'Gaya rata-rata (N)', unit: 'N', correctValue: -1.125, tolerance: 0.01 },
+                            { id: 'ans-acc3', label: 'Percepatan rata-rata (m/s²)', unit: 'm/s²', correctValue: -7.5, tolerance: 0.01 }
+                        ],
+                        feedback: { correct: "Benar — gunakan Δp = m(v_f - v_i) dan F_avg = Δp/Δt.", wrong: "Coba ulang: Hitung Δv lalu Δp = m·Δv, lalu bagi dengan Δt untuk F_avg." },
+                        explanation: "m = 0.15 kg; Δv = -9 - 6 = -15 m/s; <strong>I</strong> = 0.15 * -15 = -2.25 N·s; <strong>F</strong>_avg = -2.25 / 2 = -1.125 N; a_avg = -15 / 2 = -7.5 m/s²."
+                    } 
+                },
+
+                // LEVEL 4: TUMBUKAN TIDAK LENTING (MOBIL & BECAK) - MEDIUM
+                { 
+                    id: 4, x: 4000, type: 'calc', visual: 'accident', 
+                    question: "Sebuah senapan massanya 2 kg menembakkan peluru yang massanya 2 gram dengan kelajuan 400 m/s, tentukan kecepatan senapan sesaat peluru lepas dari senapan!",
+                    sim: {}, 
+                    options: { 
+                        input: { correctValue: 0.4, tolerance: 0.01 }, 
+                        feedback: { correct: "Benar — gunakan kekekalan momentum (m_peluru·v_peluru + m_senapan·v_senapan = 0).", wrong: "Ingat: peluru dan senapan memiliki momentum berlawanan sehingga m_senapan·v_senapan = - m_peluru·v_peluru." }, 
+                        explanation: "v_senapan = - (m_peluru * v_peluru) / m_senapan = - (0.002 * 400)/2 = -0.4 m/s (arah berlawanan peluru)." 
+                    } 
+                },
+
+                // LEVEL 5: KARTU-1 (dari sebelumnya multi-card) — dijadikan rintangan standalone
+                {
+                    id: 5, x: 5000, type: 'calc', visual: 'mud',
+                    question: "Bola A dan B mula-mula bergerak seperti pada gambar. Kedua bola kemudian bertumbukan tidak lenting sama sekali. Tentukan kecepatan bola A setelah tumbukan (m/s)!",
+                    sim: { type: 'image', src: 'https://raw.githubusercontent.com/lorrainemydth-gif/ICT-MEDIA-PEMBELAJARAN/1aa2ac16b6c9e9df7146a2f40c9a5b39246b693f/WhatsApp%20Image%202025-12-15%20at%208.33.04%20AM.jpeg' },
+                    options: { input: { correctValue: 1, tolerance: 0.05, unit: 'm/s' }, feedback: { correct: 'Benar — kecepatan bola A setelah tumbukan = 1 m/s', wrong: 'Coba lagi — gunakan kekekalan momentum untuk tumbukan tidak lenting sama sekali.' } }
+                },
+
+                // LEVEL 6: TUMBUKAN LENTING SEBAGIAN (KECEPATAN PANTUL)
+                {
+                    id: 6, x: 5600, type: 'calc', visual: 'portal',
+                    question: "Sebuah benda jatuh bebas dari ketinggian 80 m di atas tanah. Jika tumbukan yang terjadi dengan tanah adalah lenting sebagian (e = 0.2), kecepatan pantul benda setelah tumbukan adalah (m/s)?",
+                    options: {
+                        input: { correctValue: 7.92, tolerance: 0.05, unit: 'm/s' },
+                        feedback: { correct: 'Benar — v_rebound = e × v_impact dan v_impact = √(2gh).', wrong: 'Coba lagi — hitung v_impact = √(2gh) lalu kalikan dengan e.' },
+                        explanation: 'v_impact = √(2·g·h) ≈ √(2·9.8·80) ≈ 39.6 m/s; v_rebound = 0.2 × 39.6 ≈ 7.92 m/s'
+                    }
+                },
+
+                // LEVEL 7: TUMBUKAN LENTING SEBAGIAN (TINGGI PANTUL BERURUTAN)
+                {
+                    id: 7, x: 6200, type: 'calc', visual: 'mountain',
+                    question: "Tumbukan Lenting Sebagian\nSebuah bola basket jatuh dari ketinggian 6,25 m lalu memantul kembali hingga ketinggian 4,5 m. Tentukan tinggi pantulan bola basket berikutnya (m)!",
+                    options: { input: { correctValue: 3.24, tolerance: 0.05, unit: 'm' }, feedback: { correct: 'Benar — h_next = e² × h_current', wrong: 'Ingat: e² = h2/h1; h3 = e² × h2' }, explanation: 'h2/h1 = 4.5/6.25 = 0.72 -> h3 = 0.72 × 4.5 = 3.24 m' }
+                },
+
+                // LEVEL 8: TUMBUKAN LENTING SEMPURNA (Dua benda 10 kg & 6 kg)
+                {
+                    id: 8, x: 6800, type: 'calc-multi', visual: 'fire',
+                    question: "Tumbukan Lenting Sempurna\nTerdapat dua benda yang memiliki massa 10 kg dan 6 kg. Keduanya bergerak pada bidang datar yang licin, sementara kecepatannya adalah 4 m/s dan 8 m/s. Arah kedua benda berlawanan. Jika terjadi tumbukan lenting sempurna, maka berapakah kecepatan masing-masing benda setelah tumbukan?",
+                    options: { inputs: [ { id: 'ans-v1-8', label: "Kecepatan Akhir Benda 1 (v1')", unit: "m/s", correctValue: -5, tolerance: 0.1 }, { id: 'ans-v2-8', label: "Kecepatan Akhir Benda 2 (v2')", unit: "m/s", correctValue: 7, tolerance: 0.1 } ], feedback: { correct: "Sempurna!", wrong: "Gunakan rumus tumbukan lenting sempurna untuk menghitung v1' dan v2'" } }
+                },
+
+                // LEVEL 9: TUMBUKAN LENTING TIDAK SEMPURNA (GAMBAR - SIMPAN UNTUK PENILAIAN GURU)
+                {
+                    id: 9, x: 7400, type: 'text-input', visual: 'croc',
+                    question: "Bola A dan B masing-masing bermassa 1 kg dan 2 kg secara bersamaan dilepaskan hingga meluncur di atas bidang yang licin seperti gambar. Setelah bertumbukan di bidang datar, kedua benda menjadi satu dan bergerak bersama-sama. Tentukan kecepatan kedua bola setelah bertumbukan! (Tulis langkah perhitungan dan hasil akhir dalam m/s).",
+                    sim: { type: 'image', src: 'https://raw.githubusercontent.com/lorrainemydth-gif/ICT-MEDIA-PEMBELAJARAN/956343b4347b716263d646a8c84f94bb9d4c8db0/WhatsApp%20Image%202025-12-16%20at%2012.38.16%20PM.jpeg' },
+                    options: { input: { placeholder: 'Misal: v = 2.0 m/s' }, feedback: { saved: 'Jawaban disimpan untuk penilaian guru — tidak dievaluasi otomatis.' }, noEval: true }
+                },
+
+                // FINISH (langsung setelah rintangan 9)
+                { id: 10, x: 9000, type: 'finish', visual: 'gate' }
+            ],
+            currentCheckpoint: null
+        };
+
+        const keys = { w: false, a: false, s: false, d: false };
+
+        // --- NEW: FUNGSI LEKUKAN JALAN ---
+        // Menghasilkan posisi Y tengah jalan berdasarkan posisi X
+        function getRoadCurve(x) {
+            // Menggunakan kombinasi Sinus untuk membuat jalan bergelombang tidak monoton
+            // Periode panjang (x/1200) + Periode pendek (x/400)
+            return (Math.sin(x / 800) * 150) + (Math.sin(x / 300) * 30);
+        }
+
+        // --- INIT ---
+        window.onload = () => {
+            // Parse Firebase config dari __firebase_config (dari firebase-config.js)
+            let firebaseConfig = null;
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                try {
+                    firebaseConfig = JSON.parse(__firebase_config);
+                    console.log("✅ Firebase config found!");
+                } catch (e) {
+                    console.error("❌ Error parsing Firebase config:", e);
+                }
+            }
+
+            if (firebaseConfig) {
+                initFirebase(firebaseConfig);
+            } else {
+                console.warn("⚠️ Firebase config not found. Running in Offline mode.");
+                userId = 'offline';
+                // Jangan tampilkan pesan offline, biarkan user bermain
+                document.getElementById('leaderboard-list').innerHTML = '<li class="p-1 bg-white border border-black rounded text-center text-gray-500 italic">Leaderboard tidak tersedia</li>';
+                document.getElementById('btn-start').disabled = false;
+                document.getElementById('btn-start').classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            
+            // LOAD GAMBAR SEBELUM GAME DIMULAI
+            preloadImages();
+            
+            initAudio();
+            initGame2D();
+            initControls();
+            initUI();
+        };
+
+        // FUNGSI BARU: Memuat semua gambar dari daftar imageSources
+        function preloadImages() {
+            for (const [key, url] of Object.entries(imageSources)) {
+                if (url) {
+                    const img = new Image();
+                    img.src = url;
+                    img.onload = () => {
+                        console.log(`Gambar [${key}] berhasil dimuat.`);
+                        loadedImages[key] = img;
+                    };
+                    img.onerror = () => {
+                        console.error(`Gagal memuat gambar [${key}]. Cek Link Raw-nya.`);
+                    };
+                }
+            }
+        }
+
+        async function initFirebase(config) {
+            try {
+                console.log("🔄 Initializing Firebase with config...", config.projectId);
+                const app = initializeApp(config);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("✅ Firebase Auth success! User:", userId);
+                        await loadPlayerData();
+                    } else {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            console.log("🔐 Signing in anonymously...");
+                            await signInAnonymously(auth);
+                        }
+                    }
+                    loadLeaderboard();
+                });
+            } catch (e) {
+                console.error("Firebase Error:", e);
+            }
+        }
+
+        // --- AUDIO SYSTEM ---
+        function initAudio() {
+            // Volume utama (untuk semua suara)
+            mainVol = new Tone.Volume(-10).toDestination(); 
+            reverb = new Tone.Reverb(1).connect(mainVol);
+            
+            // SFX (Efek Suara)
+            synthCorrect = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.2 } }).connect(reverb);
+            synthWrong = new Tone.Synth({ oscillator: { type: "square" }, envelope: { attack: 0.01, decay: 0.2, sustain: 0, release: 0.1 } }).connect(reverb);
+            synthLevelUp = new Tone.FMSynth({ envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.3 } }).connect(reverb);
+            
+            // --- BGM (BACKGROUND MUSIC) DARI GITHUB ---
+            // PERBAIKAN: Menggunakan link raw.githubusercontent.com agar tidak kena blokir redirect/CORS
+            // Link Asli: https://github.com/tqch320/liyaaa/raw/refs/heads/main/pad-happy-dayz-are-ahead-236456.mp3
+            // Link Fix:
+            const bgmURL = "https://raw.githubusercontent.com/tqch320/liyaaa/refs/heads/main/pad-happy-dayz-are-ahead-236456.mp3";
+
+            bgmPlayer = new Tone.Player({
+                url: bgmURL,
+                loop: true,
+                autostart: false,
+                volume: -10, // Volume dinaikkan sedikit
+                onload: () => {
+                    console.log("Musik Background Berhasil Dimuat!");
+                    const statusEl = document.getElementById('music-status');
+                    if (statusEl) {
+                        statusEl.innerText = "✅ Musik Siap Dimainkan!";
+                        statusEl.classList.remove('text-orange-500', 'animate-pulse');
+                        statusEl.classList.add('text-green-600');
+                    }
+                    // Jika game sudah jalan duluan sebelum musik load, nyalakan sekarang
+                    if (state.gameActive && !state.quizActive) {
+                        bgmPlayer.start();
+                    }
+                },
+                onerror: (e) => {
+                    console.error("Gagal memuat musik:", e);
+                    const statusEl = document.getElementById('music-status');
+                    if (statusEl) {
+                        statusEl.innerText = "❌ Gagal memuat musik (Cek koneksi/Link)";
+                        statusEl.classList.remove('text-orange-500');
+                        statusEl.classList.add('text-red-600');
+                    }
+                }
+            }).toDestination();
+            
+            Tone.Transport.bpm.value = 120;
+        }
+
+        // Fungsi untuk mengontrol musik latar
+        function toggleBGM(play) {
+            // Cek apakah player ada
+            if (!bgmPlayer) return;
+            
+            // Cek apakah player sudah loaded. Jika belum, jangan error, biarkan onload nanti yang handle.
+            if (!bgmPlayer.loaded) {
+                console.log("Musik belum selesai download, menunggu...");
+                return;
+            }
+
+            if (play) {
+                // Pastikan Audio Context berjalan (PENTING untuk browser modern)
+                if (Tone.context.state !== 'running') {
+                    Tone.start().then(() => {
+                        if (bgmPlayer.state !== "started") bgmPlayer.start();
+                    });
+                } else {
+                    if (bgmPlayer.state !== "started") bgmPlayer.start();
+                }
+            } else {
+                if (bgmPlayer.state === "started") bgmPlayer.stop();
+            }
+        }
+
+
+        // --- GAME ENGINE ---
+        let canvas, ctx;
+        function initGame2D() {
+            canvas = document.getElementById('game-canvas');
+            ctx = canvas.getContext('2d');
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        let fontsReady = false;
+        // Tunggu Google Fonts siap sebelum render canvas
+        document.fonts.ready.then(() => {
+            fontsReady = true;
+            console.log('✅ Poppins font sudah siap!');
+        });
+
+        function gameLoop() {
+            if (state.gameActive && !state.quizActive) updatePhysics();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updatePhysics() {
+            // --- NEW: CROSSING ANIMATION (PRECISION UPDATE) ---
+            if (state.crossingAction) {
+                const p = state.player;
+                const act = state.crossingAction;
+                const now = Date.now();
+                const progress = Math.min(1, (now - act.startTime) / act.duration);
+                
+                // Update player Y to follow road curve even during animation
+                const currentRoadY = getRoadCurve(p.x);
+                
+                if (progress >= 1) {
+                    // Animation finished
+                    state.crossingAction = null;
+                    p.jumpOffset = 0; 
+                    p.x = act.endX; 
+                    p.y = getRoadCurve(p.x); // Land on the road center
+                    
+                    // --- MODIFIKASI LOGIKA FINISH ---
+                    // Jika checkpoint berikutnya adalah FINISH, jangan langsung selesai.
+                    // Biarkan pemain jalan sendiri (gameActive = true).
+                    if (state.currentCheckpoint && state.currentCheckpoint.type === 'finish') {
+                        state.gameActive = true; 
+                    } else {
+                        // Jika bukan finish (level biasa), pause game dan tampilkan layar Level Up
+                        state.gameActive = false; 
+                        toggleBGM(false); // Stop BGM saat layar level up
+                        setTimeout(() => {
+                            document.getElementById('next-level-name').innerText = `Level ${state.currentLevel}`;
+                            showScreen('screen-nextlevel');
+                            if(synthLevelUp) {
+                                const n = Tone.now();
+                                synthLevelUp.triggerAttackRelease("C4","0.1",n); synthLevelUp.triggerAttackRelease("E4","0.1",n+0.1); synthLevelUp.triggerAttackRelease("G4","0.1",n+0.2); synthLevelUp.triggerAttackRelease("C5","0.2",n+0.3);
+                            }
+                        }, 1000);
+                    }
+                    return;
+                }
+
+                // Gerakan X Linear
+                p.x = act.startX + (act.endX - act.startX) * progress;
+                
+                // Base Y follows the road curve
+                // Jump Offset ditambahkan di atas posisi curve
+                const baseY = getRoadCurve(p.x);
+                
+                // Hitung animasi Jump
+                if (act.type === 'tree' || act.type === 'wall' || act.type === 'cliff') {
+                    const h = act.type === 'cliff' ? 200 : 100;
+                    if (progress < 0.2) p.jumpOffset = - (progress/0.2 * h);
+                    else if (progress < 0.8) p.jumpOffset = -h;
+                    else p.jumpOffset = -h * (1 - (progress-0.8)/0.2);
+                } 
+                else if (act.type === 'river') p.jumpOffset = -(Math.abs(Math.sin(progress * Math.PI * 3)) * 25);
+                else if (act.type === 'spike') p.jumpOffset = -(Math.sin(progress * Math.PI) * 80);
+                else if (act.type === 'cannon') p.jumpOffset = -(Math.sin(progress * Math.PI) * 200);
+                else if (act.type === 'tunnel') p.jumpOffset = 0;
+                else if (act.type === 'mud') p.jumpOffset = -20 - (Math.sin(progress * Math.PI * 4) * 5);
+                else if (act.type === 'croc') p.jumpOffset = -(Math.sin(progress * Math.PI) * 60);
+                else p.jumpOffset = -(Math.sin(progress * Math.PI) * 60);
+                
+                // Set absolute Y (Base Curve + Jump)
+                p.y = baseY; // Drawing logic adds jumpOffset later
+                
+                // Camera Follow
+                const targetCamX = p.x - canvas.width * 0.3;
+                state.camera.x += (targetCamX - state.camera.x) * 0.1;
+                return; 
+            }
+            // --- END NEW ANIMATION ---
+
+            if (state.gameFinished) {
+                const p = state.player;
+                p.vx = p.speed;
+                const roadY = getRoadCurve(p.x);
+                // Tarik pemain ke tengah jalan saat finish
+                p.vy = (roadY - p.y) * 0.1; 
+                p.x += p.vx;
+                p.y += p.vy;
+                const targetCamX = p.x - canvas.width * 0.3;
+                state.camera.x += (targetCamX - state.camera.x) * 0.1;
+
+                if (Date.now() - state.finishTime > 2000) {
+                    state.gameActive = false;
+                    state.gameFinished = false;
+                    toggleBGM(false); // Stop BGM saat finish
+                    executeFinishSequence();
+                }
+                return;
+            }
+
+            const p = state.player;
+            p.vx = 0; p.vy = 0;
+            if (keys.d) p.vx = p.speed;
+            if (keys.a) p.vx = -p.speed;
+            if (keys.w) p.vy = -p.speed;
+            if (keys.s) p.vy = p.speed;
+
+            p.x += p.vx;
+            p.y += p.vy;
+
+            // --- ROAD BOUNDARIES (UPDATED FOR CURVES) ---
+            // Sekarang batas jalan dihitung relatif terhadap curve di titik X pemain
+            const currentCurveY = getRoadCurve(p.x);
+            const topLimit = currentCurveY - ROAD_HALF + 40; // +40 buffer agar tidak keluar
+            const bottomLimit = currentCurveY + ROAD_HALF - 40;
+
+            if (p.y < topLimit) p.y = topLimit;
+            if (p.y > bottomLimit) p.y = bottomLimit;
+            if (p.x < state.startLineX - 50) p.x = state.startLineX - 50;
+
+            // --- APPROACH DETECTION ---
+            const STOP_DISTANCE = 80; 
+            state.gates.forEach(gate => {
+                if (!gate.open) {
+                    const dist = gate.x - p.x;
+                    let specificStop = STOP_DISTANCE;
+                    if (gate.visual === 'river') specificStop = 120; 
+                    if (gate.visual === 'spike') specificStop = 80;
+                    if (gate.visual === 'cliff') specificStop = 60;
+                    if (gate.visual === 'cannon') specificStop = 60;
+                    if (gate.visual === 'croc') specificStop = 80;
+
+                    // Deteksi tabrakan juga harus memperhitungkan Y, tapi karena ini gate penuh, cukup X
+                    if (dist > 0 && dist < specificStop) {
+                        p.vx = 0; 
+                        p.x = gate.x - specificStop; 
+                        triggerCheckpoint(gate.id);
+                    }
+                }
+            });
+
+            // Triggers
+            state.triggers.forEach(t => {
+                if (t.active) {
+                    if (t.id === 10) { // Special handling for finish line
+                        // Check if player has crossed x=9000 and is on the road
+                        if (p.x >= 9000 && Math.abs(p.y - getRoadCurve(p.x)) <= ROAD_HALF) {
+                            triggerCheckpoint(t.id);
+                        }
+                    } else {
+                        const dx = p.x - t.x;
+                        const dy = p.y - (getRoadCurve(t.x) + t.y); // Trigger Y relative to curve
+                        if (Math.sqrt(dx*dx + dy*dy) < 20 + t.radius) triggerCheckpoint(t.id);
+                    }
+                }
+            });
+
+            // Smooth Camera X
+            const targetCamX = p.x - canvas.width * 0.3;
+            state.camera.x += (targetCamX - state.camera.x) * 0.1;
+            
+            // Optional: Camera Y Follow (Agar jalanan tidak hilang dari layar saat melengkung jauh)
+            // Kita ambil rata-rata curve di depan pemain
+            const lookAheadY = getRoadCurve(p.x + 200);
+            // Geser camera Y agar pemain tetap relatif di tengah vertikal
+            // (canvas.height/2 default is 0 in our context translate, so we just translate context differently)
+        }
+
+        function triggerCheckpoint(id) {
+            const cp = state.checkpoints.find(c => c.id === id);
+            if (cp) {
+                if (cp.type === 'finish') {
+                    if (state.gameFinished) return;
+                    state.gameFinished = true;
+                    state.finishTime = Date.now();
+                    const t = state.triggers.find(tr => tr.id === id);
+                    if (t) t.active = false;
+                } else {
+                    state.gameActive = false;
+                    toggleBGM(false); // Stop BGM saat kuis muncul
+                    showQuiz(cp);
+                }
+            }
+        }
+
+        // --- RENDERING ---
+        function render() {
+            ctx.fillStyle = '#22c55e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            
+            // CAMERA Y LOGIC: Follow the road curve roughly
+            // Kita geser world vertikal berlawanan dengan curve pemain agar pemain tetap di tengah layar
+            const camYOffset = -getRoadCurve(state.player.x + 100) * 0.8; 
+            
+            ctx.translate(-state.camera.x, canvas.height / 2 + camYOffset);
+
+            const renderStartX = state.camera.x;
+            const renderEndX = state.camera.x + canvas.width;
+            
+            // --- DRAW CURVED ROAD (POLYGON STRIP) ---
+            // Kita gambar jalan per segmen kecil agar terlihat melengkung halus
+            const step = 20; // Resolusi jalan
+            
+            // 1. Jalan Aspal
+            ctx.beginPath();
+            ctx.fillStyle = '#6b7280';
+            // Sisi Atas Jalan
+            for (let x = renderStartX - 100; x <= renderEndX + 100; x += step) {
+                const y = getRoadCurve(x);
+                ctx.lineTo(x, y - ROAD_HALF);
+            }
+            // Sisi Bawah Jalan (balik arah)
+            for (let x = renderEndX + 100; x >= renderStartX - 100; x -= step) {
+                const y = getRoadCurve(x);
+                ctx.lineTo(x, y + ROAD_HALF);
+            }
+            ctx.closePath();
+            ctx.fill();
+
+            // 2. Pinggiran Jalan (Kerb) & Garis Tengah
+            for (let x = renderStartX - 100; x <= renderEndX + 100; x += step) {
+                const xNext = x + step;
+                const y = getRoadCurve(x);
+                const yNext = getRoadCurve(xNext);
+
+                // Kerb Atas
+                ctx.fillStyle = (Math.floor(x / 40) % 2 === 0) ? '#d1d5db' : '#9ca3af';
+                ctx.beginPath();
+                ctx.moveTo(x, y - ROAD_HALF - 20); ctx.lineTo(xNext, yNext - ROAD_HALF - 20);
+                ctx.lineTo(xNext, yNext - ROAD_HALF); ctx.lineTo(x, y - ROAD_HALF);
+                ctx.fill();
+                
+                // Kerb Bawah
+                ctx.beginPath();
+                ctx.moveTo(x, y + ROAD_HALF); ctx.lineTo(xNext, yNext + ROAD_HALF);
+                ctx.lineTo(xNext, yNext + ROAD_HALF + 20); ctx.lineTo(x, y + ROAD_HALF + 20);
+                ctx.fill();
+
+                // Garis Putih Tengah
+                if (Math.floor(x / 40) % 2 === 0) {
+                    ctx.strokeStyle = '#fff'; ctx.lineWidth = 4;
+                    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(xNext, yNext); ctx.stroke();
+                }
+            }
+
+            // Start Line
+            if (state.startLineX > renderStartX - 100 && state.startLineX < renderEndX + 100) {
+                 const startY = getRoadCurve(state.startLineX);
+                 const boxSize = 20;
+                 for (let i = 0; i < ROAD_HEIGHT / boxSize; i++) {
+                     const drawY = startY - ROAD_HALF + i * boxSize;
+                     ctx.fillStyle = i % 2 === 0 ? 'white' : 'black';
+                     ctx.fillRect(state.startLineX, drawY, boxSize, boxSize);
+                     ctx.fillStyle = i % 2 === 0 ? 'black' : 'white';
+                     ctx.fillRect(state.startLineX + boxSize, drawY, boxSize, boxSize);
+                 }
+            }
+
+            // Objects (Draw with Y offset from curve)
+            state.worldObjects.forEach(obj => {
+                if (obj.x > renderStartX - 100 && obj.x < renderEndX + 100) {
+                    // Hitung Y absolut berdasarkan Curve + Offset Y relatif objek
+                    const roadY = getRoadCurve(obj.x);
+                    // Simpan offset asli di properti baru jika belum ada, atau gunakan asumsi
+                    // Asumsi: obj.y yang digenerate adalah offset dari 0.
+                    // Jadi Absolute Y = roadY + obj.y
+                    const drawY = roadY + obj.y;
+                    
+                    // Clone object untuk rendering agar tidak merusak data asli (atau pass parameter)
+                    // Kita modifikasi fungsi drawObject agar terima y absolut
+                    drawObject(obj, drawY); 
+                }
+            });
+
+            // Finish Line Trigger Visual
+            state.triggers.forEach(t => {
+                // Draw finish for any active trigger (finish checkpoint)
+                if (t.active && t.x > renderStartX - 100 && t.x < renderEndX + 100) {
+                    const tY = getRoadCurve(t.x);
+                    const boxSize = 20;
+                    for (let i = 0; i < ROAD_HEIGHT / boxSize; i++) {
+                        const drawY = tY - ROAD_HALF + i * boxSize;
+                        ctx.fillStyle = i % 2 === 0 ? 'white' : 'black';
+                        ctx.fillRect(t.x, drawY, boxSize, boxSize);
+                        ctx.fillStyle = i % 2 === 0 ? 'black' : 'white';
+                        ctx.fillRect(t.x + boxSize, drawY, boxSize, boxSize);
+                    }
+                    ctx.save(); ctx.fillStyle = '#22c55e'; ctx.font = 'bold 700 30px Poppins'; 
+                    ctx.translate(t.x - 40, tY); // Center text vertically on road
+                    ctx.rotate(-Math.PI/2); ctx.textAlign = 'center'; ctx.fillText("🏁 FINISH 🏁", 0, 0); ctx.restore();
+                }
+            });
+
+            // Gates / Obstacles Rendering Update
+            state.gates.forEach(g => {
+                if (g.x > renderStartX - 100 && g.x < renderEndX + 100) {
+                    const gY = getRoadCurve(g.x);
+                    ctx.save();
+                    ctx.translate(g.x, gY); // Translate ke tengah jalan yang melengkung
+
+                    // CONFIG TEKS UMUM (Horizontal & Jelas)
+                    ctx.fillStyle = 'white'; 
+                    ctx.font = '600 16px Poppins'; 
+                    ctx.textAlign = 'center';
+                    ctx.shadowColor = "black";
+                    ctx.shadowBlur = 4;
+
+                    if (g.visual === 'tree') {
+                        // VISUAL: POHON TUMBANG (FULL BLOCK)
+                        ctx.fillStyle = '#5c2b28'; ctx.shadowBlur=0; ctx.beginPath();
+                        ctx.roundRect(-30, -ROAD_HALF - 10, 60, ROAD_HEIGHT + 20, 5); ctx.fill();
+                        ctx.strokeStyle = '#3f1d1b'; ctx.lineWidth = 2; ctx.stroke();
+                        ctx.fillStyle = '#16a34a';
+                        ctx.beginPath(); ctx.arc(0, -ROAD_HALF - 10, 40, 0, Math.PI*2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(0, ROAD_HALF + 10, 40, 0, Math.PI*2); ctx.fill();
+                        
+                        // TEKS DI TENGAH
+                        ctx.fillStyle = 'white'; ctx.shadowBlur=4;
+                        if (fontsReady) ctx.font = '600 16px Poppins';
+                        ctx.fillText("POHON TUMBANG", 0, 5);
+
+                    } else if (g.visual === 'accident') {
+                        // VISUAL: KECELAKAAN (MOBIL vs BECAK)
+                        ctx.save();
+                        ctx.scale(1.6, 1.6); 
+                        ctx.shadowBlur=0; // Reset shadow untuk gambar
+
+                        // Mobil Merah
+                        ctx.fillStyle = '#ef4444'; ctx.fillRect(-50, -30, 60, 40); 
+                        ctx.strokeStyle = 'black'; ctx.lineWidth = 2; ctx.strokeRect(-50, -30, 60, 40);
+                        ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(-40, 15, 8, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(-10, 15, 8, 0, Math.PI*2); ctx.fill();
+
+                        // Becak Biru
+                        ctx.save(); ctx.translate(20, 0); ctx.rotate(0.2); 
+                        ctx.fillStyle = '#3b82f6'; ctx.fillRect(0, -35, 40, 30); ctx.strokeStyle = 'black'; ctx.strokeRect(0, -35, 40, 30);
+                        ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.moveTo(0, -35); ctx.lineTo(20, -50); ctx.lineTo(40, -35); ctx.fill(); ctx.stroke();
+                        ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(30, 10, 12, 0, Math.PI*2); ctx.fill();
+                        ctx.restore();
+                        ctx.restore(); 
+
+                        // TEKS DI TENGAH (Font Besar)
+                        ctx.fillStyle = 'white'; ctx.font = '600 24px Poppins'; ctx.shadowBlur=4;
+                        ctx.fillText("TABRAKAN", 0, 10);
+
+                    } else if (g.visual === 'river') {
+                        // VISUAL: SUNGAI
+                        const riverWidth = 200; 
+                        ctx.fillStyle = '#3b82f6'; ctx.shadowBlur=0; ctx.fillRect(-riverWidth/2, -ROAD_HALF - 20, riverWidth, ROAD_HEIGHT + 40);
+                        ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 3;
+                        for(let y = -ROAD_HALF; y < ROAD_HALF; y+=40) { ctx.beginPath(); ctx.moveTo(-riverWidth/4, y); ctx.lineTo(riverWidth/4, y); ctx.stroke(); }
+                        ctx.fillStyle = '#64748b'; ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+                        [-50, 0, 50].forEach(pos => { ctx.beginPath(); ctx.ellipse(pos, 0, 20, 15, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke(); });
+                        ctx.fillStyle = '#78350f'; ctx.fillRect(-(riverWidth/2 + 5), -ROAD_HALF - 20, 5, ROAD_HEIGHT+40); ctx.fillRect(riverWidth/2, -ROAD_HALF - 20, 5, ROAD_HEIGHT+40);
+                        
+                        // TEKS DI TENGAH
+                        ctx.fillStyle = 'white'; ctx.shadowBlur=4;
+                        ctx.fillText("SUNGAI DERAS", 0, 5);
+
+                    } else if (g.visual === 'gate') {
+                        // Finish gate / arch
+                        const archW = 220;
+                        const archH = 120;
+                        // Pillars
+                        ctx.fillStyle = '#ef4444'; ctx.shadowBlur = 0;
+                        ctx.fillRect(-archW/2, -ROAD_HALF - archH, 20, archH);
+                        ctx.fillRect(archW/2 - 20, -ROAD_HALF - archH, 20, archH);
+                        // Top beam
+                        ctx.fillStyle = '#fde047'; ctx.fillRect(-archW/2 + 20, -ROAD_HALF - archH - 20, archW - 40, 20);
+                        // Banner text
+                        ctx.fillStyle = '#111827'; ctx.font = '600 22px Poppins'; ctx.textAlign = 'center'; ctx.fillText('FINISH', 0, -ROAD_HALF - archH - 6);
+                        // Decorative flags
+                        ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.moveTo(-archW/2 + 10, -ROAD_HALF - archH); ctx.lineTo(-archW/2 + 40, -ROAD_HALF - archH + 8); ctx.lineTo(-archW/2 + 10, -ROAD_HALF - archH + 16); ctx.fill();
+                        ctx.beginPath(); ctx.moveTo(archW/2 - 10, -ROAD_HALF - archH); ctx.lineTo(archW/2 - 40, -ROAD_HALF - archH + 8); ctx.lineTo(archW/2 - 10, -ROAD_HALF - archH + 16); ctx.fill();
+
+                    } else if (g.visual === 'boulder') {
+                        ctx.fillStyle = '#4b5563'; ctx.shadowBlur=0; ctx.strokeStyle = '#1f2937'; ctx.lineWidth = 2;
+                        ctx.beginPath(); ctx.arc(0, 0, ROAD_HALF - 10, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                        ctx.beginPath(); ctx.arc(-40, 60, 30, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                        ctx.beginPath(); ctx.arc(30, -50, 40, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                        
+                        // TEKS DI TENGAH
+                        ctx.fillStyle = 'white'; ctx.shadowBlur=4;
+                        ctx.fillText("BATU BESAR", 0, 5);
+
+                    } else if (g.visual === 'spike') {
+                        const pitW = 80; 
+                        ctx.fillStyle = '#292524'; ctx.shadowBlur=0;
+                        ctx.fillRect(-pitW/2, -ROAD_HALF - 10, pitW, ROAD_HEIGHT + 20);
+                        ctx.fillStyle = '#d1d5db'; 
+                        for(let x = -pitW/2 + 5; x < pitW/2; x+=20) { for(let y = -ROAD_HALF + 20; y < ROAD_HALF; y+=40) { ctx.beginPath(); ctx.moveTo(x, y+10); ctx.lineTo(x+8, y-15); ctx.lineTo(x+16, y+10); ctx.fill(); }}
+                        
+                        // TEKS DI TENGAH
+                        ctx.fillStyle = 'white'; ctx.shadowBlur=4;
+                        ctx.fillText("LUBANG DURI", 0, 5);
+
+                    } else if (g.visual === 'cliff') {
+                        const cliffH = ROAD_HEIGHT + 60;
+                        ctx.fillStyle = '#a5f3fc'; ctx.shadowBlur=0;
+                        ctx.fillRect(-40, -cliffH/2, 80, cliffH);
+                        ctx.strokeStyle = '#0891b2'; ctx.lineWidth = 2; ctx.strokeRect(-40, -cliffH/2, 80, cliffH);
+                        ctx.strokeStyle = 'white'; ctx.lineWidth = 1;
+                        ctx.beginPath(); ctx.moveTo(-30, -100); ctx.lineTo(0, -50); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(20, 50); ctx.lineTo(-10, 100); ctx.stroke();
+                        
+                        // TEKS DI TENGAH
+                        ctx.fillStyle = '#164e63'; ctx.shadowBlur=0; // Teks gelap di background terang
+                        ctx.fillText("TEBING ES", 0, 5);
+
+                    } else if (g.visual === 'mud') {
+                        ctx.fillStyle = '#78350f'; ctx.shadowBlur=0;
+                        ctx.fillRect(-60, -ROAD_HALF - 20, 120, ROAD_HEIGHT + 40);
+                        ctx.strokeStyle = '#92400e'; ctx.lineWidth = 3;
+                        for(let i=0; i<5; i++) { const y = -100 + i*50; ctx.beginPath(); ctx.moveTo(-40, y); ctx.quadraticCurveTo(0, y+20, 40, y); ctx.stroke(); }
+                        
+                        // TEKS DI TENGAH
+                        ctx.fillStyle = 'white'; ctx.shadowBlur=4;
+                        ctx.fillText("BANJIR LUMPUR", 0, 5);
+
+                    } else if (g.visual === 'wall') {
+                        ctx.fillStyle = '#9ca3af'; ctx.shadowBlur=0;
+                        ctx.fillRect(-20, -ROAD_HALF - 20, 40, ROAD_HEIGHT + 40);
+                        ctx.strokeStyle = '#4b5563'; ctx.lineWidth = 2; ctx.strokeRect(-20, -ROAD_HALF - 20, 40, ROAD_HEIGHT + 40);
+                        ctx.fillStyle = '#facc15'; 
+                        for(let y = -ROAD_HALF; y < ROAD_HALF; y+=40) { ctx.beginPath(); ctx.moveTo(-20, y); ctx.lineTo(20, y+20); ctx.lineTo(20, y+10); ctx.lineTo(-20, y-10); ctx.fill(); }
+                        
+                        // TEKS DI TENGAH
+                        ctx.fillStyle = 'white'; ctx.shadowBlur=4;
+                        ctx.fillText("TEMBOK BETON", 0, 5);
+
+                    } else if (g.visual === 'croc') {
+                        const waterW = 120; 
+                        ctx.fillStyle = '#064e3b'; ctx.shadowBlur=0;
+                        ctx.fillRect(-waterW/2, -ROAD_HALF - 10, waterW, ROAD_HEIGHT + 20);
+                        ctx.fillStyle = '#78350f'; ctx.fillRect(-30, -30, 60, 60); 
+                        ctx.strokeStyle = '#451a03'; ctx.lineWidth = 2;
+                        ctx.beginPath(); ctx.moveTo(-30, -10); ctx.lineTo(30, -10); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-30, 10); ctx.lineTo(30, 10); ctx.stroke();
+                        ctx.fillStyle = 'yellow'; [[-40, -50], [-30, 60], [40, -40], [30, 70]].forEach(pos => { ctx.beginPath(); ctx.arc(pos[0], pos[1], 3, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(pos[0]+8, pos[1], 3, 0, Math.PI*2); ctx.fill(); });
+                        
+                        // TEKS DI TENGAH
+                        ctx.fillStyle = 'white'; ctx.shadowBlur=4;
+                        ctx.fillText("KOLAM BUAYA", 0, 5);
+
+                    } else if (g.visual === 'fire') {
+                        const fireW = 100;
+                        // Dasar api (glow kuning-oranye)
+                        ctx.fillStyle = '#fbbf24'; ctx.shadowBlur=15; ctx.shadowColor='#f59e0b';
+                        ctx.fillRect(-fireW/2, -ROAD_HALF - 10, fireW, ROAD_HEIGHT + 20);
+                        // Garis api (merah-oranye)
+                        ctx.strokeStyle = '#ea580c'; ctx.lineWidth = 3;
+                        for(let i=0; i<3; i++) {
+                            const x = -fireW/2 + (i+1)*25;
+                            ctx.beginPath();
+                            ctx.moveTo(x, ROAD_HALF);
+                            ctx.quadraticCurveTo(x-15, 0, x-5, -ROAD_HALF);
+                            ctx.stroke();
+                        }
+                        // Bintang api di tengah
+                        ctx.fillStyle = '#f97316';
+                        for(let i=0; i<4; i++) {
+                            const angle = (Math.PI/2) * i;
+                            const x = Math.cos(angle) * 25;
+                            const y = Math.sin(angle) * 25;
+                            ctx.beginPath();
+                            ctx.arc(x, y, 8, 0, Math.PI*2);
+                            ctx.fill();
+                        }
+                        // TEKS DI TENGAH
+                        ctx.fillStyle = 'white'; ctx.shadowBlur=4;
+                        ctx.fillText("LUBANG API", 0, 5);
+
+                        } else if (g.visual === 'mountain') {
+                            ctx.fillStyle = '#7c2d12';
+                            ctx.beginPath();
+                            ctx.moveTo(-80, ROAD_HALF);
+                            ctx.lineTo(-20, -80);
+                            ctx.lineTo(0, -30);
+                            ctx.lineTo(30, -90);
+                            ctx.lineTo(50, -20);
+                            ctx.lineTo(90, -60);
+                            ctx.lineTo(100, ROAD_HALF);
+                            ctx.fill();
+                            ctx.strokeStyle = '#451a03'; ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.moveTo(-80, ROAD_HALF);
+                            ctx.lineTo(-20, -80);
+                            ctx.lineTo(0, -30);
+                            ctx.lineTo(30, -90);
+                            ctx.lineTo(50, -20);
+                            ctx.lineTo(90, -60);
+                            ctx.lineTo(100, ROAD_HALF);
+                            ctx.stroke();
+                            ctx.fillStyle = '#f5f5f5';
+                            ctx.beginPath();
+                            ctx.arc(-20, -80, 10, 0, Math.PI*2);
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.arc(30, -90, 12, 0, Math.PI*2);
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.arc(90, -60, 9, 0, Math.PI*2);
+                            ctx.fill();
+                            ctx.fillStyle = 'white'; ctx.shadowBlur=4;
+                            ctx.fillText("GUNUNG TINGGI", 0, 5);
+
+                        } else if (g.visual === 'portal') {
+                            // Portal aneh - lingkaran bercahaya
+                            const pW = 120;
+                            // Glow dasar
+                            ctx.save();
+                            const grad = ctx.createRadialGradient(0, -20, 10, 0, -20, pW/2);
+                            grad.addColorStop(0, 'rgba(124, 58, 237, 0.95)');
+                            grad.addColorStop(0.4, 'rgba(99, 102, 241, 0.8)');
+                            grad.addColorStop(1, 'rgba(79, 70, 229, 0.15)');
+                            ctx.fillStyle = grad; ctx.shadowBlur = 30; ctx.shadowColor = '#7c2de5';
+                            ctx.beginPath(); ctx.ellipse(0, -20, pW/2, pW/3, 0, 0, Math.PI*2); ctx.fill();
+                            // Inner swirl rings
+                            ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 2;
+                            for(let i=0;i<3;i++){
+                                ctx.beginPath(); ctx.ellipse(0, -20, pW/4 - i*10, (pW/6) - i*6, i*0.2, 0, Math.PI*2); ctx.stroke();
+                            }
+                            // Center core
+                            ctx.fillStyle = '#c084fc'; ctx.beginPath(); ctx.arc(0, -20, 16, 0, Math.PI*2); ctx.fill();
+                            // Partikel kecil mengapung
+                            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                            [[-30,-30],[-10,-10],[20,-40],[10,5],[-20,10]].forEach(pos=>{ ctx.beginPath(); ctx.arc(pos[0], pos[1], 3, 0, Math.PI*2); ctx.fill(); });
+                            ctx.restore();
+                            // TEKS DI TENGAH
+                            ctx.fillStyle = 'white'; ctx.shadowBlur=6;
+                            ctx.fillText("PORTAL ANEH", 0, 5);
+
+                        } else if (g.visual === 'truck') {
+                        ctx.fillStyle = '#e11d48'; ctx.shadowBlur=0;
+                        ctx.fillRect(-30, -100, 60, 200);
+                        ctx.strokeStyle = '#881337'; ctx.lineWidth = 2; ctx.strokeRect(-30, -100, 60, 200);
+                        ctx.save(); ctx.translate(0, -110); ctx.rotate(-0.2);
+                        ctx.fillStyle = '#f59e0b'; ctx.fillRect(-25, 0, 50, 40); ctx.restore();
+                        
+                        // TEKS DI TENGAH
+                        ctx.fillStyle = 'white'; ctx.shadowBlur=4;
+                        ctx.fillText("TRUK MOGOK", 0, 5);
+
+                    } else if (g.visual === 'bumper') {
+                        ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 5; ctx.shadowBlur=0;
+                        ctx.beginPath(); let zig = -40; ctx.moveTo(zig, -ROAD_HALF);
+                        for(let y = -ROAD_HALF; y <= ROAD_HALF; y+=20) { zig = (zig === -40) ? 40 : -40; ctx.lineTo(zig, y); }
+                        ctx.stroke();
+                        ctx.fillStyle = 'rgba(37, 99, 235, 0.8)'; ctx.fillRect(-10, -ROAD_HALF, 20, ROAD_HEIGHT);
+                        
+                        // TEKS DI TENGAH
+                        ctx.fillStyle = 'white'; ctx.shadowBlur=4;
+                        ctx.fillText("PEGAS", 0, 5);
+
+                    } else {
+                        ctx.fillStyle = '#ef4444'; ctx.shadowBlur=0;
+                        ctx.fillRect(-10, -ROAD_HALF, 20, ROAD_HEIGHT);
+                        ctx.strokeRect(-10, -ROAD_HALF, 20, ROAD_HEIGHT);
+                        
+                        // TEKS DI TENGAH
+                        ctx.fillStyle = 'white'; ctx.font = '600 20px Poppins'; ctx.shadowBlur=4;
+                        ctx.fillText(`RINTANGAN ${g.id}`, 0, 5);
+                    }
+                    
+                    ctx.shadowBlur = 0; // Reset Shadow Global
+                    ctx.restore();
+                }
+            });
+
+            // Player
+            const p = state.player;
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            // Bayangan ikut Y pemain
+            ctx.beginPath(); ctx.ellipse(p.x, p.y + 15, 20, 8, 0, 0, Math.PI*2); ctx.fill();
+            // Draw player (p.y is now Absolute, pass jumpOffset)
+            drawToonCharacter(ctx, p.x, p.y + (p.jumpOffset || 0), state.playerType, (p.vx !== 0 || p.vy !== 0 || state.crossingAction));
+            ctx.fillStyle = 'black'; ctx.font = '600 14px Poppins'; ctx.textAlign = 'center'; 
+            ctx.fillText(state.playerName, p.x, p.y - 45 + (p.jumpOffset || 0));
+
+            ctx.restore();
+        }
+
+        // Modified DrawObject to accept explicit Y
+        function drawObject(obj, overrideY) {
+            const y = overrideY !== undefined ? overrideY : obj.y;
+            
+            // CEK 1: APAKAH ADA GAMBAR KUSTOM UNTUK OBJEK INI?
+            if (loadedImages[obj.type]) {
+                const img = loadedImages[obj.type];
+                
+                // Tentukan ukuran gambar (proporsional)
+                // Jika objek punya width/height sendiri (seperti building), pakai itu.
+                // Jika tidak (seperti tree), kita set default size.
+                let drawW = obj.w || 60;
+                let drawH = obj.h || 60;
+
+                // Jaga aspek rasio gambar asli agar tidak gepeng
+                if (img.width && img.height) {
+                    const aspect = img.width / img.height;
+                    // Sesuaikan tinggi berdasarkan lebar yang diinginkan
+                    drawH = drawW / aspect;
+                }
+
+                // Gambar di canvas (Pusat di tengah bawah agar pas di tanah)
+                ctx.drawImage(img, obj.x - drawW/2, y - drawH/2, drawW, drawH);
+                
+                // Return agar tidak menggambar bentuk default (kotak/bulat) di bawahnya
+                return;
+            }
+
+            // --- JIKA TIDAK ADA GAMBAR, GAMBAR BENTUK DEFAULT (KODE LAMA) ---
+            if (obj.type === 'building') {
+                ctx.fillStyle = obj.color;
+                ctx.fillRect(obj.x - obj.w/2, y - obj.h/2, obj.w, obj.h);
+                ctx.lineWidth = 3; ctx.strokeStyle = 'black'; ctx.strokeRect(obj.x - obj.w/2, y - obj.h/2, obj.w, obj.h);
+                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillRect(obj.x - obj.w/2, y - obj.h/2, obj.w, 10);
+                ctx.fillStyle = '#bae6fd';
+                for(let iy = y - obj.h/2 + 20; iy < y + obj.h/2 - 20; iy += 25) {
+                    for(let ix = obj.x - obj.w/2 + 10; ix < obj.x + obj.w/2 - 10; ix += 25) {
+                        ctx.fillRect(ix, iy, 15, 15); ctx.strokeRect(ix, iy, 15, 15);
+                    }
+                }
+            } else if (obj.type === 'tree') {
+                ctx.fillStyle = '#16a34a'; ctx.beginPath(); ctx.arc(obj.x, y, 25, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#4ade80'; ctx.beginPath(); ctx.arc(obj.x - 8, y - 8, 8, 0, Math.PI*2); ctx.fill();
+            } else if (obj.type === 'car') {
+                ctx.save(); ctx.translate(obj.x, y);
+                ctx.fillStyle = obj.color; ctx.fillRect(-25, -20, 50, 20); ctx.strokeStyle = 'black'; ctx.strokeRect(-25, -20, 50, 20);
+                ctx.fillStyle = 'rgba(150, 200, 255, 0.7)'; ctx.fillRect(-15, -30, 30, 10); ctx.strokeRect(-15, -30, 30, 10);
+                ctx.fillStyle = '#1f2937'; ctx.beginPath(); ctx.arc(-15, 0, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(15, 0, 5, 0, Math.PI*2); ctx.fill();
+                if (obj.carType === 'taxi') {
+                    ctx.fillStyle = 'black'; ctx.font = '600 8px Poppins'; ctx.textAlign = 'center'; ctx.fillText("TAKSI", 0, -32);
+                    ctx.fillStyle = '#fde047'; ctx.fillRect(-8, -36, 16, 4); ctx.strokeRect(-8, -36, 16, 4);
+                }
+                ctx.restore();
+            } else if (obj.type === 'person') {
+                ctx.save(); ctx.translate(obj.x, y);
+                ctx.fillStyle = '#ffdecb'; ctx.strokeStyle = 'black'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, -30, 8, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = obj.color; ctx.fillRect(-6, -22, 12, 18); ctx.strokeRect(-6, -22, 12, 18);
+                ctx.fillStyle = '#1f2937'; ctx.fillRect(-5, -4, 5, 4); ctx.fillRect(0, -4, 5, 4);
+                ctx.restore();
+            }
+        }
+
+        // --- VTUBER CHARACTER DRAWING ---
+        function drawToonCharacter(ctx, x, y, type, isMoving) {
+            
+            // CEK: APAKAH ADA GAMBAR CUSTOM UNTUK PLAYER?
+            // Kuncinya: 'player_neko' atau 'player_star'
+            const imgKey = `player_${type}`;
+            if (loadedImages[imgKey]) {
+                const img = loadedImages[imgKey];
+                const size = 80; // Ukuran player
+                
+                ctx.save();
+                ctx.translate(x, y);
+                
+                // Efek Bobbing (Naik turun saat jalan)
+                const bob = isMoving ? Math.sin(Date.now() / 80) * 5 : 0;
+                ctx.translate(0, bob);
+
+                // Flip gambar jika jalan ke kiri
+                if (state.player.vx < 0) ctx.scale(-1, 1);
+
+                // Bayangan sederhana
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.beginPath(); ctx.ellipse(0, size/2 - 5, 20, 8, 0, 0, Math.PI*2); ctx.fill();
+
+                // Gambar Karakter
+                ctx.drawImage(img, -size/2, -size/2, size, size);
+                
+                ctx.restore();
+                return; // Keluar agar tidak menggambar karakter default
+            }
+
+            // --- JIKA TIDAK ADA GAMBAR, GUNAKAN ANIMASI KODE (DEFAULT) ---
+            ctx.save(); ctx.translate(x, y);
+            
+            // 1. Flip jika bergerak ke kiri
+            if (state.player.vx < 0) ctx.scale(-1, 1);
+            
+            // 2. Bobbing animation (Naik turun saat jalan)
+            const bob = isMoving ? Math.sin(Date.now() / 80) * 2 : 0;
+            ctx.translate(0, bob);
+
+            // 3. Shadow (Bayangan di tanah)
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.beginPath(); ctx.ellipse(0, 18, 12, 6, 0, 0, Math.PI*2); ctx.fill();
+
+            // 4. Walk Cycle (Animasi Kaki)
+            const walk = isMoving ? Math.sin(Date.now() / 100) * 6 : 0;
+
+            if (type === 'neko') {
+                // --- NEKO CHAN (Cat Girl) ---
+                
+                // Kaki (Stoking Hitam)
+                ctx.fillStyle = '#1f2937'; 
+                ctx.beginPath(); ctx.ellipse(-6 + walk, 12, 4, 6, 0, 0, Math.PI*2); ctx.fill(); 
+                ctx.beginPath(); ctx.ellipse(6 - walk, 12, 4, 6, 0, 0, Math.PI*2); ctx.fill();
+
+                // Badan (Dress Pink)
+                ctx.fillStyle = '#ec4899'; ctx.strokeStyle = 'black'; ctx.lineWidth = 2;
+                ctx.beginPath(); 
+                ctx.moveTo(-10, 10); ctx.lineTo(10, 10); ctx.lineTo(8, -5); ctx.lineTo(-8, -5); ctx.closePath();
+                ctx.fill(); ctx.stroke();
+                
+                // Pita di dada
+                ctx.fillStyle = '#fce7f3'; ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI*2); ctx.fill();
+
+                // Kepala (Kulit)
+                ctx.fillStyle = '#fef3c7'; 
+                ctx.beginPath(); ctx.arc(0, -12, 14, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+
+                // Rambut (Pink Terang)
+                ctx.fillStyle = '#db2777'; 
+                ctx.beginPath(); 
+                ctx.arc(0, -14, 15, Math.PI, 0); // Atas
+                ctx.lineTo(16, -5); // Samping Kanan
+                ctx.lineTo(10, -12);
+                ctx.lineTo(-10, -12);
+                ctx.lineTo(-16, -5); // Samping Kiri
+                ctx.lineTo(-15, -14);
+                ctx.fill(); ctx.stroke();
+
+                // Telinga Kucing (Nekomimi)
+                ctx.fillStyle = '#db2777';
+                ctx.beginPath(); ctx.moveTo(-10, -25); ctx.lineTo(-18, -35); ctx.lineTo(-2, -28); ctx.fill(); ctx.stroke(); // Kiri
+                ctx.beginPath(); ctx.moveTo(10, -25); ctx.lineTo(18, -35); ctx.lineTo(2, -28); ctx.fill(); ctx.stroke(); // Kanan
+
+                // Headphone
+                ctx.fillStyle = '#1f2937'; 
+                ctx.fillRect(-16, -18, 4, 10); ctx.fillRect(12, -18, 4, 10); // Earcup
+                ctx.beginPath(); ctx.arc(0, -20, 14, Math.PI, 0); ctx.stroke(); // Band
+
+                // Wajah
+                ctx.fillStyle = 'black'; 
+                // Mata Besar
+                ctx.beginPath(); ctx.ellipse(-5, -10, 3, 4, 0, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(5, -10, 3, 4, 0, 0, Math.PI*2); ctx.fill();
+                // Kilau Mata
+                ctx.fillStyle = 'white';
+                ctx.beginPath(); ctx.arc(-4, -12, 1.5, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(6, -12, 1.5, 0, Math.PI*2); ctx.fill();
+                // Mulut Kucing :3
+                ctx.strokeStyle = 'black'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(-2, -6); ctx.quadraticCurveTo(0, -4, 2, -6); ctx.stroke();
+
+            } else {
+                // --- HOSHI KUN (Star Boy) ---
+                
+                // Kaki (Celana Biru)
+                ctx.fillStyle = '#0f172a'; 
+                ctx.beginPath(); ctx.ellipse(-6 + walk, 12, 4, 6, 0, 0, Math.PI*2); ctx.fill(); 
+                ctx.beginPath(); ctx.ellipse(6 - walk, 12, 4, 6, 0, 0, Math.PI*2); ctx.fill();
+
+                // Badan (Hoodie Biru Langit)
+                ctx.fillStyle = '#0ea5e9'; ctx.strokeStyle = 'black'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.roundRect(-10, -5, 20, 16, 4); ctx.fill(); ctx.stroke();
+                // Bintang di baju
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(2, 5); ctx.lineTo(7, 5); ctx.lineTo(3, 8); ctx.lineTo(5, 13); ctx.lineTo(0, 10); ctx.lineTo(-5, 13); ctx.lineTo(-3, 8); ctx.lineTo(-7, 5); ctx.lineTo(-2, 5); ctx.closePath(); ctx.fill();
+
+                // Kepala
+                ctx.fillStyle = '#ffdecb'; 
+                ctx.beginPath(); ctx.arc(0, -12, 14, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+
+                // Rambut (Biru Spiky)
+                ctx.fillStyle = '#0284c7';
+                ctx.beginPath();
+                ctx.moveTo(-14, -10);
+                ctx.lineTo(-16, -20); // Spike 1
+                ctx.lineTo(-8, -18);
+                ctx.lineTo(0, -28); // Spike Atas (Ahoge)
+                ctx.lineTo(8, -18);
+                ctx.lineTo(16, -20); // Spike 2
+                ctx.lineTo(14, -10);
+                ctx.quadraticCurveTo(0, -15, -14, -10); // Poni
+                ctx.fill(); ctx.stroke();
+
+                // Headset Mic
+                ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(12, -12); ctx.lineTo(4, -6); ctx.stroke();
+                ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(4, -6, 1.5, 0, Math.PI*2); ctx.fill();
+
+                // Wajah Cool
+                ctx.fillStyle = 'black';
+                ctx.beginPath(); ctx.rect(-7, -12, 4, 2); ctx.fill(); // Mata Kiri Datar
+                ctx.beginPath(); ctx.rect(3, -12, 4, 2); ctx.fill();  // Mata Kanan Datar
+                ctx.strokeStyle = 'black'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(-2, -5); ctx.lineTo(2, -5); ctx.stroke(); // Mulut Senyum Tipis
+            }
+
+            ctx.restore();
+        }
+
+        function generateLevel() {
+            state.worldObjects = []; state.triggers = []; state.gates = [];
+            const prevCp = state.currentLevel === 1 ? null : state.checkpoints[state.currentLevel - 2];
+            const startX = prevCp ? prevCp.x : 0;
+            state.player.y = getRoadCurve(startX); // Set initial Y to road curve
+            state.player.x = startX;
+            state.startLineX = startX + 150; state.camera.x = startX - 200;
+
+            for (let x = -200; x < 11000; x += 100) {
+                // Objek dekorasi
+                // Note: y disimpan sebagai offset dari tengah jalan (Relative Y)
+                if (Math.random() < 0.4) state.worldObjects.push({ type: 'building', x: x, y: -ROAD_HALF - 60, w: 60+Math.random()*40, h: 60+Math.random()*60, color: ['#ef4444', '#3b82f6', '#f59e0b', '#a855f7'][Math.floor(Math.random()*4)] });
+                if (Math.random() < 0.4) state.worldObjects.push({ type: 'building', x: x, y: ROAD_HALF + 60, w: 60+Math.random()*40, h: 60+Math.random()*60, color: ['#ef4444', '#3b82f6', '#f59e0b', '#a855f7'][Math.floor(Math.random()*4)] });
+                if (Math.random() < 0.2) state.worldObjects.push({ type: 'tree', x: x, y: (Math.random()<0.5?-1:1)*(ROAD_HALF + 25) });
+                
+                // --- MENGHAPUS MOBIL DEKORASI AGAR JALAN SEPI ---
+                // Baris kode mobil dihapus sesuai permintaan
+                
+                if (Math.random() < 0.15) state.worldObjects.push({ type: 'person', x: x - 40 + Math.random()*80, y: (Math.random()<0.5?-1:1)*(ROAD_HALF + 10), color: ['#6366f1', '#e879f9', '#fef08a'][Math.floor(Math.random()*3)] });
+            }
+
+            state.checkpoints.forEach(cp => {
+                if (cp.type !== 'finish') {
+                    state.gates.push({ id: cp.id, x: cp.x, open: false, visual: cp.visual || 'gate' });
+                }
+                else state.triggers.push({ id: cp.id, x: cp.x, y: 0, radius: 60, active: true });
+            });
+        }
+
+        // --- UI LOGIC ---
+        function initControls() {
+            window.addEventListener('keydown', e => { if(['w','ArrowUp'].includes(e.key)) keys.w=true; if(['s','ArrowDown'].includes(e.key)) keys.s=true; if(['a','ArrowLeft'].includes(e.key)) keys.a=true; if(['d','ArrowRight'].includes(e.key)) keys.d=true; });
+            window.addEventListener('keyup', e => { if(['w','ArrowUp'].includes(e.key)) keys.w=false; if(['s','ArrowDown'].includes(e.key)) keys.s=false; if(['a','ArrowLeft'].includes(e.key)) keys.a=false; if(['d','ArrowRight'].includes(e.key)) keys.d=false; });
+            const setupTouch = (id, k) => { const el = document.getElementById(id); if(el) { el.addEventListener('touchstart',e=>{e.preventDefault();keys[k]=true}); el.addEventListener('touchend',e=>{e.preventDefault();keys[k]=false}); }};
+            setupTouch('dpad-up','w'); setupTouch('dpad-down','s'); setupTouch('dpad-left','a'); setupTouch('dpad-right','d');
+        }
+        
+        function initUI() {
+            document.getElementById('name-input').addEventListener('input', e => {
+                const valid = e.target.value.trim().length > 0;
+                document.getElementById('btn-start').disabled = !valid;
+                if(valid) document.getElementById('btn-start').classList.remove('opacity-50', 'cursor-not-allowed');
+                else document.getElementById('btn-start').classList.add('opacity-50', 'cursor-not-allowed');
+            });
+        }
+
+        function showScreen(id) {
+            ['screen-home', 'screen-map', 'screen-char', 'screen-video', 'screen-quiz', 'screen-gameover', 'screen-finish-message', 'screen-nextlevel', 'screen-rules'].forEach(s => {
+                const el = document.getElementById(s); if(el) el.classList.add('hidden');
+            });
+            if (id !== 'none') document.getElementById(id).classList.remove('hidden');
+            
+            // Kontrol BGM berdasarkan layar
+            if (id === 'none') {
+                // MASUK GAMEPLAY
+                document.getElementById('hud').classList.remove('hidden');
+                document.getElementById('dpad').classList.remove('hidden');
+                
+                // Pastikan musik menyala saat masuk game
+                toggleBGM(true); 
+            } else {
+                // MENU / INTERFACE LAINNYA
+                document.getElementById('hud').classList.add('hidden');
+                document.getElementById('dpad').classList.add('hidden');
+                
+                // PERUBAHAN DI SINI:
+                // Matikan musik di SEMUA layar menu (Home, Map, Char Select, dll)
+                // Musik hanya akan nyala saat id === 'none' (Gameplay)
+                toggleBGM(false);
+            }
+            // When opening map screen: nothing auto-aligned now (hotspots removed)
+        }
+
+        // --- GLOBAL FUNCTIONS (For HTML access) ---
+        window.goToCharSelect = async () => {
+            // PENTING: Ini adalah interaksi pertama user (Klik tombol Start di Menu)
+            // Browser mengizinkan audio menyala HANYA setelah interaksi ini.
+            try {
+                await Tone.start(); 
+                console.log("Audio Context Started");
+            } catch (e) {
+                console.error("Audio Start Failed:", e);
+            }
+
+            state.playerName = document.getElementById('name-input').value.trim() || "Noob";
+            document.getElementById('player-name-display').innerText = state.playerName;
+            savePlayerData();
+            showScreen('screen-char');
+        };
+
+        window.selectChar = (type) => {
+            state.playerType = type;
+            const nekoSVG = `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="35" fill="#fce7f3" stroke="black"/><path d="M20,30 L30,10 L50,30 Z" fill="#ec4899" stroke="black"/><path d="M80,30 L70,10 L50,30 Z" fill="#ec4899" stroke="black"/><circle cx="35" cy="55" r="4" fill="#be185d"/><circle cx="65" cy="55" r="4" fill="#be185d"/><path d="M45,65 Q50,70 55,65" fill="none" stroke="black" stroke-width="2"/></svg>`;
+            const starSVG = `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="35" fill="#e0f2fe" stroke="black"/><path d="M20,25 L30,40 L10,40 Z" fill="#facc15" stroke="black" transform="rotate(-30 20 25)"/><path d="M20,40 L30,10 L50,35 L70,10 L80,40" fill="none" stroke="#0ea5e9" stroke-width="4" stroke-linecap="round"/><circle cx="35" cy="55" r="4" fill="#0284c7"/><circle cx="65" cy="55" r="4" fill="#0284c7"/><path d="M45,65 Q50,70 55,65" fill="none" stroke="black" stroke-width="2"/></svg>`;
+            
+            document.getElementById('avatar-icon').innerHTML = (type === 'neko') ? nekoSVG : starSVG;
+            savePlayerData();
+            showScreen('screen-map');
+            updateMapUI();
+        };
+
+        window.selectLevel = (lvl) => {
+            if (lvl <= state.maxLevel) {
+                state.currentLevel = lvl;
+                showScreen('screen-rules');
+            }
+        };
+
+        // Map NEXT button handler: start current unlocked level
+        window.mapNext = () => {
+            state.currentLevel = state.maxLevel || 1;
+            showScreen('screen-rules');
+        };
+
+        window.startGame = async () => {
+             // Backup: Cek lagi audio context (kadang di mobile perlu double check)
+             if (Tone.context.state !== 'running') await Tone.start();
+             
+             state.score = 0; 
+             state.correctAnswers = 0; // RESET STATS
+             state.wrongAnswers = 0;   // RESET STATS
+             state.levelResults = [];  // RESET RESULTS LIST
+             state.gameActive = true; state.quizActive = false;
+             state.currentCheckpoint = state.checkpoints[state.currentLevel - 1] || state.checkpoints[0];
+             generateLevel();
+             document.getElementById('score-display').innerText = state.score;
+             document.getElementById('objective-text').innerText = state.currentCheckpoint.type === 'finish' ? "FINISH" : `LEVEL ${state.currentLevel}`;
+             
+             // UI Update
+             showScreen('none'); // showScreen('none') di kode asli sudah memanggil toggleBGM(true)
+             
+             // TAPI, kita panggil eksplisit di sini untuk memastikan Transport jalan
+             toggleBGM(true);
+        };
+        
+        window.restartGame = () => window.startGame();
+        window.goHome = () => showScreen('screen-home');
+        
+        // --- Added Missing Function ---
+        window.closeNextLevelScreen = () => {
+            state.quizActive = false; 
+            state.gameActive = true;
+            showScreen('none');
+            if (state.currentCheckpoint) {
+                document.getElementById('objective-text').innerText = state.currentCheckpoint.type === 'finish' ? "FINISH" : `LEVEL ${state.currentLevel}`;
+            }
+        };
+        // ------------------------------
+
+        // --- NEW: startCrossingSequence with PRECISION COORDINATES ---
+        window.startCrossingSequence = (visualType, gateX) => {
+            state.gameActive = true; 
+            state.quizActive = false;
+            toggleBGM(true); // Pastikan BGM kembali setelah kuis
+            
+            // Tentukan titik Start dan End yang PRESISI berdasarkan lebar gambar rintangan
+            // GateX adalah titik tengah rintangan
+            
+            let startOffset = -100;
+            let endOffset = 100;
+            let duration = 2000;
+
+            if (visualType === 'river') {
+                // Sungai lebar 200px (-100 sampai +100)
+                startOffset = -130; endOffset = 130; duration = 3000; 
+            } else if (visualType === 'spike') {
+                // Lubang duri lebar 80px (dipersempit)
+                startOffset = -60; endOffset = 60; duration = 1500; // ADJUSTED: Lebih dekat & cepat
+            } else if (visualType === 'tree' || visualType === 'wall' || visualType === 'accident') {
+                // Pohon/Tembok/Tabrakan relatif tipis
+                startOffset = -50; endOffset = 50; duration = 2500;
+            } else if (visualType === 'cliff') {
+                // Tebing Es tipis tapi tinggi
+                startOffset = -40; endOffset = 40; duration = 4000; // Lama memanjat
+            } else if (visualType === 'croc') {
+                // Kolam Buaya (lebar 120px now)
+                startOffset = -60; endOffset = 90; duration = 2000; // Lompat dari tengah (rakit) ke ujung
+            } else if (visualType === 'tunnel') {
+                // Terowongan
+                startOffset = -90; endOffset = 90;
+            } else if (visualType === 'mud') {
+                // Lumpur
+                startOffset = -90; endOffset = 90;
+            } else if (visualType === 'portal') {
+                // Portal aneh (lebar ~120px)
+                startOffset = -80; endOffset = 80; duration = 1800;
+            } else if (visualType === 'fire') {
+                // Lubang Api (lebar 100px)
+                startOffset = -70; endOffset = 70; duration = 2000;
+                } else if (visualType === 'mountain') {
+                    // Gunung (lebar ~180px)
+                    startOffset = -100; endOffset = 100; duration = 3000;
+            } else if (visualType === 'slime') {
+                // Slime kecil
+                startOffset = -50; endOffset = 50;
+            } else {
+                // Default
+                startOffset = -60; endOffset = 60;
+            }
+
+            state.crossingAction = {
+                type: visualType,
+                startX: gateX + startOffset, 
+                endX: gateX + endOffset,       
+                startTime: Date.now(),
+                duration: duration
+            };
+            
+            state.player.x = state.crossingAction.startX;
+        }
+
+        window.checkAnswer = () => {
+            const cp = state.currentCheckpoint;
+            let correct = false;
+            let feedbackText = '';
+            
+            // VAR BARU: Untuk Laporan Rinci
+            let userAnswerDisplay = "-";
+            let correctAnswerDisplay = "-";
+
+            document.getElementById('quiz-submit-btn').disabled = true;
+
+            // No-eval mode: simpan jawaban untuk penilaian guru tanpa evaluasi otomatis
+            if (cp.options && cp.options.noEval) {
+                // Kumpulkan jawaban tergantung tipe soal
+                if (cp.type === 'text-input') {
+                    const val = document.getElementById('quiz-text-input').value.trim();
+                    userAnswerDisplay = val.length === 0 ? 'Kosong' : val;
+                } else if (cp.type === 'calc') {
+                    const raw = document.getElementById('quiz-number-input').value.trim();
+                    userAnswerDisplay = raw.length === 0 ? 'Kosong' : raw;
+                } else if (cp.type === 'calc-multi') {
+                    const parts = [];
+                    if (cp.options && Array.isArray(cp.options.inputs)) {
+                        cp.options.inputs.forEach(inp => {
+                            const el = document.getElementById(inp.id);
+                            const val = el ? el.value.trim() : '';
+                            parts.push(`${inp.label}=${val}${inp.unit?inp.unit:''}`);
+                        });
+                        userAnswerDisplay = parts.join(' | ');
+                    } else { userAnswerDisplay = 'Kosong'; }
+                } else {
+                    userAnswerDisplay = 'Kosong';
+                }
+
+                // Catat hasil tanpa skor (points = 0, isCorrect = null)
+                state.levelResults.push({
+                    level: state.currentLevel,
+                    question: cp.question,
+                    isCorrect: null,
+                    points: 0,
+                    userAnswer: userAnswerDisplay,
+                    correctAnswer: '-'
+                });
+
+                const fb = document.getElementById('quiz-feedback');
+                fb.innerText = (cp.options && cp.options.feedback && cp.options.feedback.saved) ? cp.options.feedback.saved : 'Jawaban disimpan untuk penilaian guru (tidak dievaluasi otomatis).';
+                fb.className = "text-center font-black mt-2 h-auto text-yellow-600 text-sm";
+
+                // Buka gate dan lanjutkan ke level berikutnya setelah jeda singkat
+                setTimeout(() => {
+                    showScreen('none');
+                    const g = state.gates.find(gate => gate.id === cp.id); if(g) g.open = true;
+                    const t = state.triggers.find(tr => tr.id === cp.id); if(t) t.active = false;
+                    startCrossingSequence(cp.visual || 'gate', g ? g.x : state.player.x + 100);
+                    state.currentLevel++;
+                    if(state.currentLevel > state.maxLevel) { state.maxLevel = state.currentLevel; savePlayerData(); }
+                    if(state.currentLevel <= state.checkpoints.length) state.currentCheckpoint = state.checkpoints[state.currentLevel - 1];
+                }, 1000);
+
+                return;
+            }
+
+            if (cp.type === 'mcq') {
+                // ... (MCQ Logic Tetap) ...
+                const sel = document.querySelector('input[name="qopt"]:checked');
+                const correctIndex = cp.options.correct;
+                if (sel) {
+                    const idx = parseInt(sel.value);
+                    userAnswerDisplay = cp.options.mcq[idx];
+                    if (idx === correctIndex) correct = true;
+                } else { userAnswerDisplay = "Tidak menjawab"; }
+                correctAnswerDisplay = cp.options.mcq[correctIndex];
+                feedbackText = cp.options.explanation;
+
+            } else if (cp.type === 'text-input') { // NEW: LOGIKA ESAI
+                const val = document.getElementById('quiz-text-input').value.trim();
+                const lowerVal = val.toLowerCase();
+                
+                userAnswerDisplay = val || "Kosong";
+                correctAnswerDisplay = cp.options.keywords[0] + " (atau sinonimnya)";
+
+                // Cek apakah jawaban mengandung salah satu kata kunci
+                if (val.length > 0 && cp.options.keywords.some(k => lowerVal.includes(k))) {
+                    correct = true;
+                    feedbackText = cp.options.feedback.correct;
+                } else {
+                    feedbackText = cp.options.feedback.wrong;
+                }
+
+            } else if (cp.type === 'slider') {
+                const val = parseFloat(document.getElementById('quiz-slider').value);
+                
+                // Simpan Data Laporan
+                userAnswerDisplay = val.toString();
+                correctAnswerDisplay = `Antara ${cp.options.correctRange[0]} - ${cp.options.correctRange[1]}`;
+
+                if (val >= cp.options.correctRange[0] && val <= cp.options.correctRange[1]) correct = true;
+                feedbackText = cp.options.explanation;
+
+            } else if (cp.type === 'calc' || cp.type === 'video-calc') {
+                const raw = document.getElementById('quiz-number-input').value.trim();
+                let val = NaN;
+                // Accept fraction input like '8/3'
+                if (raw.includes('/')) {
+                    const parts = raw.split('/').map(s => s.trim());
+                    if (parts.length === 2) {
+                        const a = parseFloat(parts[0].replace(',','.'));
+                        const b = parseFloat(parts[1].replace(',','.'));
+                        if (!isNaN(a) && !isNaN(b) && b !== 0) val = a / b;
+                    }
+                } else {
+                    val = parseFloat(raw.replace(',','.'));
+                }
+                const target = cp.options.input.correctValue;
+
+                // Simpan Data Laporan
+                userAnswerDisplay = raw.length === 0 ? "Kosong" : raw;
+                correctAnswerDisplay = target.toString();
+
+                if (!isNaN(val) && Math.abs(val - target) <= (cp.options.input.tolerance || 0)) {
+                    correct = true; feedbackText = cp.options.feedback.correct;
+                } else {
+                    feedbackText = cp.options.feedback.wrong;
+                }
+            } else if (cp.type === 'calc-multi') {
+                let allCorrect = true;
+                const parts = [];
+                const keys = [];
+                if (cp.options && Array.isArray(cp.options.inputs)) {
+                    cp.options.inputs.forEach(inp => {
+                        const el = document.getElementById(inp.id);
+                        const val = el ? parseFloat(el.value) : NaN;
+                        parts.push(`${inp.label}=${isNaN(val)?'?':val}${inp.unit?inp.unit:''}`);
+                        keys.push(`${(inp.correctValue!==undefined)?inp.correctValue:'?'}${inp.unit?inp.unit:''}`);
+                        if (isNaN(val) || Math.abs(val - inp.correctValue) > (inp.tolerance || 0)) allCorrect = false;
+                    });
+                    userAnswerDisplay = parts.join(' | ');
+                    correctAnswerDisplay = keys.join(' | ');
+                }
+                // special-case legacy ID 9 behavior remains fallback
+                if (cp.id === 9 && allCorrect) { feedbackText = cp.options.feedback.correct; }
+                if (allCorrect) { correct = true; feedbackText = cp.options.feedback.correct; }
+                else { correct = false; feedbackText = cp.options.feedback.wrong; }
+            }
+            
+            // --- NEW: LOG RESULT LENGKAP ---
+            // Scoring rule: +10 for correct, -5 for incorrect
+            const scoreChange = correct ? 10 : -5;
+            state.levelResults.push({
+                level: state.currentLevel,
+                question: cp.question,
+                isCorrect: correct,
+                points: scoreChange,
+                attempts: state.wrongStreak,  // JUMLAH SALAH SEBELUM BENAR/HANGUS
+                userAnswer: userAnswerDisplay,      // REKAM JAWABAN USER
+                correctAnswer: correctAnswerDisplay // REKAM KUNCI JAWABAN
+            });
+
+            const fb = document.getElementById('quiz-feedback');
+            if (correct) {
+                state.correctAnswers++; // TRACK CORRECT
+                
+                // Gunakan variable scoreChange yang sudah dihitung di atas
+                fb.innerText = `BENAR! 🎉 (${scoreChange > 0 ? '+' : ''}${scoreChange} Poin)`;
+                fb.className = "text-center font-black mt-2 h-auto text-green-600 text-sm";
+                state.score += scoreChange;
+                document.getElementById('score-display').innerText = state.score;
+                
+                if(synthCorrect) synthCorrect.triggerAttackRelease("C4", "0.2");
+                
+                const g = state.gates.find(gate => gate.id === cp.id); if(g) g.open = true;
+                const t = state.triggers.find(tr => tr.id === cp.id); if(t) t.active = false;
+                
+                // TRIGGER ANIMATION SEQUENCE (Replaces immediate timeout)
+                setTimeout(() => {
+                    showScreen('none'); // Hide quiz and restart BGM
+                    // PASS gate.x ke fungsi animasi agar tahu harus melompat seberapa jauh
+                    startCrossingSequence(cp.visual || 'gate', g ? g.x : state.player.x + 100); 
+                    
+                    // Update Logic after animation starts
+                    state.currentLevel++;
+                    if(state.currentLevel > state.maxLevel) { state.maxLevel = state.currentLevel; savePlayerData(); }
+                    if(state.currentLevel <= state.checkpoints.length) state.currentCheckpoint = state.checkpoints[state.currentLevel - 1];
+                }, 1000); // Short delay to see "BENAR!"
+
+            } else {
+                state.wrongAnswers++; // TRACK WRONG
+                state.wrongStreak++; // Increment kesalahan berturut-turut
+                if (state.wrongStreak >= 3) {
+                    // Hangus: lanjut ke level berikutnya
+                    fb.innerText = `HANGUS! 💀 Pertanyaan dilewati (-5 Poin)`;
+                    fb.className = "text-center font-black mt-2 h-auto text-red-600 text-sm";
+                    if(synthWrong) synthWrong.triggerAttackRelease("F#3", "0.3");
+                    state.score -= 5;
+                    document.getElementById('score-display').innerText = state.score;
+                    // Lanjut seperti benar
+                    setTimeout(() => {
+                        showScreen('none');
+                        const g = state.gates.find(gate => gate.id === cp.id); if(g) g.open = true;
+                        const t = state.triggers.find(tr => tr.id === cp.id); if(t) t.active = false;
+                        startCrossingSequence(cp.visual || 'gate', g ? g.x : state.player.x + 100);
+                        state.currentLevel++;
+                        if(state.currentLevel > state.maxLevel) { state.maxLevel = state.currentLevel; savePlayerData(); }
+                        if(state.currentLevel <= state.checkpoints.length) state.currentCheckpoint = state.checkpoints[state.currentLevel - 1];
+                    }, 1000);
+                } else {
+                    fb.innerText = `SALAH! 💀 (-5 Poin)`;
+                    fb.className = "text-center font-black mt-2 h-auto text-red-600 text-sm";
+                    if(synthWrong) synthWrong.triggerAttackRelease("F#3", "0.3");
+                    state.score -= 5;
+                    document.getElementById('score-display').innerText = state.score;
+                    setTimeout(() => {
+                        document.getElementById('quiz-submit-btn').disabled = false;
+                        fb.innerHTML = `Coba lagi! (Petunjuk: ${feedbackText})`; 
+                        fb.className = "text-center font-black mt-2 h-auto text-yellow-600 text-sm";
+                    }, 2000);
+                }
+            }
+        };
+
+        window.proceedToQuestion = () => {
+            document.getElementById('level-video').pause();
+            prepareQuizUI(state.currentCheckpoint);
+        };
+
+        // --- MULTI-CARD HANDLERS FOR LEVEL 5 ---
+        window.completeCard = (cardId) => {
+            const cp = state.currentCheckpoint;
+            if (!cp || cp.type !== 'multi-card') return;
+            const cardIdx = cp.cards.findIndex(c => c.id === cardId);
+            if (cardIdx === -1) return;
+            const card = cp.cards[cardIdx];
+            if (card.locked) return;
+
+            const inputEl = document.getElementById(`card-input-${card.id}`);
+            const btn = document.getElementById(`card-btn-${card.id}`);
+            const status = document.getElementById(`card-status-${card.id}`);
+
+            const raw = inputEl.value.trim();
+
+            // If numeric card, parse and validate against provided correctValue
+            if (card.type === 'calc') {
+                let val = NaN;
+                if (raw.includes('/')) {
+                    const parts = raw.split('/').map(s => s.trim());
+                    if (parts.length === 2) {
+                        const a = parseFloat(parts[0].replace(',','.'));
+                        const b = parseFloat(parts[1].replace(',','.'));
+                        if (!isNaN(a) && !isNaN(b) && b !== 0) val = a / b;
+                    }
+                } else { val = parseFloat(raw.replace(',','.')); }
+
+                if (isNaN(val)) {
+                    status.innerText = 'Input tidak valid'; status.classList.remove('text-green-700'); status.classList.add('text-yellow-600');
+                    setTimeout(()=>{ status.innerText = ''; status.classList.remove('text-yellow-600'); }, 2000);
+                    return;
+                }
+
+                const target = (card.options && card.options.input && card.options.input.correctValue) ? card.options.input.correctValue : NaN;
+                const tol = (card.options && card.options.input && card.options.input.tolerance) ? card.options.input.tolerance : 0.01;
+                if (isNaN(target) || Math.abs(val - target) > tol) {
+                    // wrong answer — do not lock, give hint
+                    status.innerText = (card.options && card.options.feedback && card.options.feedback.wrong) ? card.options.feedback.wrong : 'Jawaban salah';
+                    status.classList.remove('text-green-700'); status.classList.add('text-red-600');
+                    setTimeout(()=>{ status.innerText = ''; status.classList.remove('text-red-600'); }, 2500);
+                    return;
+                }
+
+                // Correct
+                inputEl.disabled = true; btn.disabled = true; status.innerText = 'Benar'; status.classList.add('text-green-700');
+                card.userAnswer = raw;
+
+            } else {
+                // essay-style card validation (unchanged)
+                const answer = raw;
+                if (answer.length < 3) {
+                    status.innerText = 'Jawaban terlalu singkat'; status.classList.remove('text-green-700'); status.classList.add('text-yellow-600');
+                    setTimeout(()=>{ status.innerText = ''; status.classList.remove('text-yellow-600'); }, 2000);
+                    return;
+                }
+
+                // Lock this card UI
+                inputEl.disabled = true; btn.disabled = true; status.innerText = 'Selesai'; status.classList.add('text-green-700');
+                card.userAnswer = answer;
+            }
+
+            // Unlock next card (if any)
+            if (cardIdx < cp.cards.length - 1) {
+                const nextCard = cp.cards[cardIdx+1]; nextCard.locked = false;
+                const nextEl = document.getElementById(`card-${nextCard.id}`);
+                if (nextEl) { nextEl.classList.remove('opacity-60'); }
+                const nextTA = document.getElementById(`card-input-${nextCard.id}`);
+                const nextBtn = document.getElementById(`card-btn-${nextCard.id}`);
+                if (nextTA) nextTA.disabled = false;
+                if (nextBtn) nextBtn.disabled = false;
+                // notify
+                const nStatus = document.getElementById(`card-status-${nextCard.id}`);
+                if (nStatus) { nStatus.innerText = 'Terbuka'; nStatus.classList.add('text-blue-600'); }
+            } else {
+                // Completed final card -> finalize level
+                finalizeMultiCard(cp);
+            }
+        };
+
+        function finalizeMultiCard(cp) {
+            // Build combined answer for reporting
+            const userAns = cp.cards.map(c=>`${c.id}:${(c.userAnswer||'')}`).join(' || ');
+            state.levelResults.push({ level: state.currentLevel, question: cp.question, isCorrect: true, points: 10, userAnswer: userAns, correctAnswer: 'Esai - guru periksa' });
+            state.correctAnswers++;
+            state.score += 10; document.getElementById('score-display').innerText = state.score;
+
+            const fb = document.getElementById('quiz-feedback'); fb.innerText = `SEMUA KARTU SELESAI! ✅ (+10 Poin)`; fb.className = 'text-center font-black mt-2 h-auto text-green-600 text-sm';
+
+            // Open gate and trigger crossing as normal
+            const g = state.gates.find(gate => gate.id === cp.id); if(g) g.open = true;
+            setTimeout(()=>{
+                showScreen('none');
+                startCrossingSequence(cp.visual || 'gate', g ? g.x : state.player.x + 100);
+                state.currentLevel++;
+                if(state.currentLevel > state.maxLevel) { state.maxLevel = state.currentLevel; savePlayerData(); }
+                if(state.currentLevel <= state.checkpoints.length) state.currentCheckpoint = state.checkpoints[state.currentLevel - 1];
+            }, 1200);
+        }
+        
+        // --- HELPERS ---
+        function showQuiz(cp) {
+            // BGM dihentikan di triggerCheckpoint
+            state.quizActive = true; state.currentCheckpoint = cp;
+            if (cp.type === 'video-calc') {
+                showScreen('screen-video');
+                document.getElementById('video-narrative').innerText = cp.narrative;
+                const vid = document.getElementById('level-video'); vid.src = cp.videoUrl; vid.load();
+                return;
+            }
+            prepareQuizUI(cp);
+        }
+
+        function prepareQuizUI(cp) {
+            state.wrongStreak = 0; // Reset counter kesalahan per pertanyaan
+            document.getElementById('quiz-level-num').innerText = state.currentLevel;
+            document.getElementById('quiz-question').innerText = cp.question;
+            document.getElementById('quiz-feedback').innerText = '';
+            document.getElementById('quiz-submit-btn').disabled = false;
+            
+            // Hide all options first
+            ['mcq', 'slider', 'cutscene', 'input', 'multi-input', 'text', 'cards'].forEach(id => document.getElementById(`quiz-options-${id}`).classList.add('hidden'));
+            document.getElementById('quiz-question-container').classList.remove('hidden');
+
+            // UPDATE: Handle Custom Image & Simulation
+            if (cp.sim) {
+                if (cp.sim.type === 'image') {
+                    const box = document.getElementById('quiz-options-cutscene');
+                    box.classList.remove('hidden');
+                    // Tampilkan gambar dengan styling agar pas di kotak
+                    box.innerHTML = `<div class="w-full h-64 flex items-center justify-center bg-gray-200 rounded-lg overflow-hidden border-2 border-black"><img src="${cp.sim.src}" class="max-w-full max-h-full object-contain" alt="Soal Visual"></div>`;
+                } else if (cp.sim.type) {
+                    setupSimulation(cp.sim.type);
+                }
+            }
+
+            if (cp.type === 'mcq') {
+                const c = document.getElementById('quiz-options-mcq'); c.classList.remove('hidden'); c.innerHTML = '';
+                cp.options.mcq.forEach((opt, i) => c.innerHTML += `<label class="block w-full text-left p-2 rounded-lg border-2 border-black bg-white cursor-pointer hover:bg-blue-50 text-sm"><input type="radio" name="qopt" value="${i}" class="mr-2 accent-black"> <span class="font-bold">${opt}</span></label>`);
+            } else if (cp.type === 'text-input') { // NEW: TAMPILKAN INPUT TEKS
+                document.getElementById('quiz-options-text').classList.remove('hidden');
+                document.getElementById('quiz-text-input').value = '';
+                document.getElementById('quiz-text-input').focus();
+            } else if (cp.type === 'slider') {
+                document.getElementById('quiz-options-slider').classList.remove('hidden');
+                document.getElementById('slider-label-left').innerText = cp.options.slider.minLabel;
+                document.getElementById('slider-label-right').innerText = cp.options.slider.maxLabel;
+                const s = document.getElementById('quiz-slider'); s.min = cp.options.slider.min; s.max = cp.options.slider.max; s.value = cp.options.slider.value;
+                document.getElementById('slider-value').innerText = s.value; s.oninput = e => document.getElementById('slider-value').innerText = e.target.value;
+            } else if (cp.type === 'calc' || cp.type === 'video-calc') {
+                document.getElementById('quiz-options-input').classList.remove('hidden');
+                document.getElementById('quiz-number-input').value = '';
+                // Show unit next to input if provided
+                const unitEl = document.getElementById('quiz-input-unit'); if (unitEl) unitEl.innerText = (cp.options && cp.options.input && cp.options.input.unit) ? cp.options.input.unit : 'Unit';
+            } else if (cp.type === 'multi-card') {
+                // Render multi-card essay UI
+                const box = document.getElementById('quiz-options-cards'); box.classList.remove('hidden'); box.innerHTML = '';
+                cp.cards.forEach((card, idx) => {
+                    const locked = card.locked ? 'opacity-60' : '';
+                    box.innerHTML += `
+                        <div id="card-${card.id}" class="mb-3 p-3 rounded-lg border-2 border-black bg-white ${locked}">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="font-black">${card.title}</div>
+                                <div class="text-xs font-bold text-gray-500">${card.locked ? 'Terkunci' : 'Terbuka'}</div>
+                            </div>
+                            ${card.sim && card.sim.type === 'image' ? `<div class="mb-2 w-full h-40 overflow-hidden rounded"><img src="${card.sim.src}" class="w-full h-full object-contain"/></div>` : ''}
+                            <p class="text-sm mb-2">${card.question}</p>
+                            ${card.type === 'calc' ? `
+                                <div class="flex items-center gap-2 mb-2">
+                                    <input id="card-input-${card.id}" type="text" placeholder="0" class="w-full p-2 border-2 border-black rounded" ${card.locked? 'disabled':''} />
+                                    <span class="text-xs font-bold text-gray-500">${(card.options && card.options.input && card.options.input.unit) ? card.options.input.unit : ''}</span>
+                                </div>
+                            ` : `
+                                <textarea id="card-input-${card.id}" class="w-full p-2 border-2 border-black rounded h-20" placeholder="Tulis jawabanmu di sini..." ${card.locked? 'disabled':''}></textarea>
+                            `}
+                            <div class="flex gap-2 mt-2">
+                                <button id="card-btn-${card.id}" class="btn-3d bg-blue-600 text-white font-black py-2 px-4 rounded uppercase" ${card.locked? 'disabled':''} onclick="completeCard('${card.id}')">Selesai</button>
+                                <div id="card-status-${card.id}" class="text-sm font-black self-center ml-auto text-green-700"></div>
+                            </div>
+                        </div>`;
+                });
+                // Disable default submit button for multi-card flow
+                document.getElementById('quiz-submit-btn').disabled = true;
+            } else if (cp.type === 'calc-multi') {
+                const c = document.getElementById('quiz-options-multi-input'); c.classList.remove('hidden'); c.innerHTML = '';
+                cp.options.inputs.forEach(inp => c.innerHTML += `<div class="mb-2"><label class="block text-[10px] font-black text-gray-700 uppercase mb-1">${inp.label}:</label><div class="flex items-center gap-1"><input type="number" id="${inp.id}" placeholder="?" class="w-full p-1.5 text-lg font-bold text-center border-2 border-black rounded focus:bg-yellow-50 outline-none"><span class="text-xs font-bold text-gray-500">${inp.unit}</span></div></div>`);
+            }
+            showScreen('screen-quiz');
+            state.quizStartTime = Date.now();
+        }
+
+        function updateMapUI() {
+            document.querySelectorAll('.map-pin').forEach(p => {
+                const match = p.getAttribute('onclick').match(/selectLevel\((\d+)\)/);
+                if (!match) return;
+                const lvl = parseInt(match[1]);
+                
+                // Reset classes
+                p.classList.remove('locked', 'completed', 'current');
+                
+                // Detect if this level is the finish checkpoint and show a flag
+                const cpForPin = state.checkpoints[lvl-1];
+                let t = (cpForPin && cpForPin.type === 'finish') ? '🏁' : lvl;
+                let l = '';
+                
+                if (lvl < state.maxLevel) { 
+                    p.classList.add('completed'); 
+                    t='✔️'; 
+                    // l=(lvl===1)?'Start':''; 
+                }
+                else if (lvl === state.maxLevel) { 
+                    // Highlight level yang harus dimainkan sekarang
+                    p.classList.add('current'); 
+                    l=(lvl===1)?'MULAI!':'Main'; 
+                }
+                else { 
+                    p.classList.add('locked'); 
+                    if(lvl!==10){t='🔒';} else{l='Finish';} 
+                }
+                
+                p.innerHTML = `${t}${l?`<span class="map-pin-label">${l}</span>`:''}`;
+            });
+        }
+
+        // Align pins automatically by detecting number blobs on the map image.
+        async function alignPinsToNumbers() {
+            const board = document.getElementById('map-board');
+            // get background image url
+            const bg = getComputedStyle(board).backgroundImage;
+            const m = bg.match(/url\(["']?(.*?)["']?\)/);
+            if(!m) return;
+            const url = m[1];
+
+            // load image
+            const img = await new Promise((res, rej) => { const i=new Image(); i.crossOrigin='Anonymous'; i.onload=()=>res(i); i.onerror=rej; i.src=url; });
+            const w = img.naturalWidth, h = img.naturalHeight;
+            const c = document.createElement('canvas'); c.width = w; c.height = h;
+            const ctx = c.getContext('2d'); ctx.drawImage(img,0,0);
+            const data = ctx.getImageData(0,0,w,h).data;
+
+            // simple detection: find green pixels likely from number glyphs (green outline) or white centers
+            const mask = new Uint8Array(w*h);
+            for(let y=0;y<h;y++) for(let x=0;x<w;x++) {
+                const i = (y*w+x)*4; const r=data[i], g=data[i+1], b=data[i+2];
+                if ((g>140 && g>r+20 && g>b+20) || (r>200 && g>200 && b>200)) mask[y*w+x]=1;
+            }
+
+            // label connected components (simple flood fill)
+            const labels = new Int32Array(w*h); let next=1; const rects={};
+            for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const idx=y*w+x; if(mask[idx] && labels[idx]===0){
+                const stack=[idx]; labels[idx]=next; let minx=x,maxx=x,miny=y,maxy=y,area=0;
+                while(stack.length){ const cur=stack.pop(); const cy=Math.floor(cur/w), cx=cur%w; area++; if(cx<minx)minx=cx; if(cx>maxx)maxx=cx; if(cy<miny)miny=cy; if(cy>maxy)maxy=cy;
+                    // 4-neighbors
+                    const n1=cur-1, n2=cur+1, n3=cur-w, n4=cur+w;
+                    if(cx>0 && mask[n1] && labels[n1]===0){ labels[n1]=next; stack.push(n1); }
+                    if(cx<w-1 && mask[n2] && labels[n2]===0){ labels[n2]=next; stack.push(n2); }
+                    if(cy>0 && mask[n3] && labels[n3]===0){ labels[n3]=next; stack.push(n3); }
+                    if(cy<h-1 && mask[n4] && labels[n4]===0){ labels[n4]=next; stack.push(n4); }
+                }
+                rects[next]={minx,miny,maxx,maxy,area}; next++;
+            }}
+
+            const comps = Object.values(rects).filter(r=>r.area>20 && (r.maxx-r.minx)<80 && (r.maxy-r.miny)<80);
+            // compute centroids
+            const centroids = comps.map(r=>({x: (r.minx+r.maxx)/2, y: (r.miny+r.maxy)/2, area: r.area}));
+            if(centroids.length===0) { console.warn('No centroids found'); return; }
+
+            // sort roughly by path: lower rows first (y desc), then x asc
+            centroids.sort((a,b)=>{ if(Math.abs(b.y-a.y)>20) return b.y-a.y; return a.x-b.x; });
+
+            // Remove any existing hotspots we created before
+            board.querySelectorAll('.map-hotspot').forEach(n=>n.remove());
+
+            // Hotspot creation removed — map remains a visual only element now.
+            console.log('Detection completed, hotspots disabled by configuration');
+        }
+
+        function executeFinishSequence() {
+             // BGM sudah dihentikan di updatePhysics
+             state.score += 50;
+             updateLeaderboard(state.score);
+             document.getElementById('finish-player-name').innerText = state.playerName;
+             document.getElementById('finish-player-score').innerText = state.score;
+             
+             // --- NEW: KIRIM DATA KE FIREBASE ---
+             saveGameResultToFirebase();
+             
+             // UPDATE STATS DISPLAY
+             document.getElementById('finish-correct-count').innerText = state.correctAnswers;
+             document.getElementById('finish-wrong-count').innerText = state.wrongAnswers;
+             
+             // UPDATE DETAIL LIST
+             const list = document.getElementById('finish-details-list');
+             list.innerHTML = '';
+             state.levelResults.forEach(res => {
+                 const color = res.isCorrect ? 'text-green-600' : 'text-red-600';
+                 const icon = res.isCorrect ? '✅' : '❌';
+                 const points = res.points > 0 ? `+${res.points}` : res.points;
+                 // Truncate question for UI
+                 const qText = res.question.length > 50 ? res.question.substring(0, 50) + '...' : res.question;
+                 
+                 list.innerHTML += `
+                    <li class="flex justify-between items-start border-b border-gray-100 pb-2">
+                        <div class="w-3/4">
+                            <span class="font-black text-gray-800">Lvl ${res.level}</span>
+                            <p class="text-[10px] text-gray-500 leading-tight">${qText}</p>
+                        </div>
+                        <div class="${color} font-black text-right">
+                            <div>${icon}</div>
+                            <div class="text-[10px]">${points} Poin</div>
+                        </div>
+                    </li>
+                 `;
+             });
+
+             showScreen('screen-finish-message');
+             toggleBGM(false); // Pastikan BGM mati di layar finish
+        }
+
+        // --- NEW: FUNGSI DOWNLOAD RAPOR (DIPERBARUI) ---
+        // --- NEW: FUNGSI DOWNLOAD RAPOR (TXT dengan format rapi) ---
+        window.downloadReport = () => {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const timeStr = now.toLocaleTimeString('id-ID');
+            
+            let content = `=================================================\n`;
+            content += `           RAPOR PETUALANGAN FISIKA 2D           \n`;
+            content += `=================================================\n\n`;
+            content += `INFORMASI PEMAIN\n`;
+            content += `Nama Pemain   : ${state.playerName}\n`;
+            content += `Karakter      : ${state.playerType === 'neko' ? 'Lucy (Neko)' : 'Luke (Star)'}\n`;
+            content += `Waktu Main    : ${dateStr}, ${timeStr}\n\n`;
+            
+            content += `RINGKASAN HASIL\n`;
+            content += `Total Skor    : ${state.score}\n`;
+            content += `Jawaban Benar : ${state.correctAnswers}\n`;
+            content += `Jawaban Salah : ${state.wrongAnswers}\n\n`;
+            
+            content += `=================================================\n`;
+            content += `                RINCIAN PER LEVEL                \n`;
+            content += `=================================================\n\n`;
+            
+            state.levelResults.forEach((res, index) => {
+                const status = res.isCorrect ? "BENAR [✔]" : "SALAH [X]";
+                
+                content += `LEVEL ${res.level}\n`;
+                content += `Status        : ${status}\n`;
+                content += `Jumlah Salah  : ${res.attempts}\n`;
+                content += `Soal          : ${res.question}\n`;
+                content += `Jawaban Kamu  : ${res.userAnswer}\n`;
+                content += `Kunci Jawaban : ${res.correctAnswer}\n`;
+                content += `Poin Diperoleh: ${res.points > 0 ? '+' + res.points : res.points}\n`;
+                content += `-------------------------------------------------\n\n`;
+            });
+
+            content += `CATATAN\n`;
+            content += `- Jika jawabanmu salah, bandingkan dengan kunci jawaban untuk belajar.\n`;
+            content += `- Fisika itu asik! Teruslah berlatih.\n\n`;
+            content += `Physics Adventure 2D - Educational Game © 2025\n`;
+
+            // Membuat Blob dan Link Download
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            // Nama file: Rapor_Lengkap_Nama_Timestamp.txt
+            a.download = `Rapor_Lengkap_${state.playerName.replace(/\s+/g, '_')}.txt`;
+            
+            document.body.appendChild(a);
+            a.click();
+            
+            // Bersihkan
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        };
+        
+        // --- NEW FUNCTION: SAVE GAME RESULT TO FIREBASE ---
+        async function saveGameResultToFirebase() {
+            if (!userId || userId === 'offline' || !db) return;
+            
+            try {
+                // Siapkan data hasil permainan
+                const gameResult = {
+                    playerName: state.playerName,
+                    playerType: state.playerType,
+                    userId: userId,
+                    score: state.score,
+                    correctAnswers: state.correctAnswers,
+                    wrongAnswers: state.wrongAnswers,
+                    totalLevelsCompleted: state.currentLevel,
+                    levelResults: state.levelResults,
+                    finishTime: serverTimestamp(),
+                    gameVersion: "1.0"
+                };
+
+                // Simpan ke collection "game_results"
+                await addDoc(collection(db, "game_results"), gameResult);
+                
+                console.log("✅ Game result saved to Firebase!");
+            } catch (error) {
+                console.error("❌ Error saving game result:", error);
+            }
+        }
+        
+        // --- DATABASE ---
+        async function savePlayerData() {
+            if (!userId || userId==='offline' || !db) return;
+            try { await setDoc(doc(db, "artifacts", appId, "users", userId, "playerData", "save"), { name: state.playerName, type: state.playerType, maxLvl: state.maxLevel, ts: serverTimestamp() }, {merge:true}); } catch(e) {}
+        }
+        async function loadPlayerData() {
+            if (!userId || userId==='offline' || !db) return;
+            try {
+                const snap = await getDoc(doc(db, "artifacts", appId, "users", userId, "playerData", "save"));
+                if (snap.exists()) {
+                    const d = snap.data();
+                    state.playerName = d.name || "Noob"; state.playerType = d.type || "neko";
+                    // ALWAYS START FROM LEVEL 1 - don't load maxLevel progress
+                    state.maxLevel = 1;
+                    state.currentLevel = 1;
+                    document.getElementById('name-input').value = state.playerName;
+                    document.getElementById('btn-start').disabled = false;
+                    document.getElementById('btn-start').classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            } catch(e) {}
+        }
+        async function updateLeaderboard(score) {
+            if (!userId || userId==='offline' || !db) return;
+            try { await addDoc(collection(db, "artifacts", appId, "public", "data", "leaderboard"), { name: state.playerName, score: score, userId: userId }); } catch(e){}
+        }
+        function loadLeaderboard() {
+            if (!db) return;
+            if (unsubLeaderboard) unsubLeaderboard();
+            const q = query(collection(db, "artifacts", appId, "public", "data", "leaderboard"), limit(5));
+            unsubLeaderboard = onSnapshot(q, (snap) => {
+                const list = document.getElementById('leaderboard-list'); list.innerHTML = '';
+                const scores = []; snap.forEach(d => scores.push(d.data()));
+                scores.sort((a,b) => b.score - a.score);
+                scores.forEach(s => list.innerHTML += `<li class="flex justify-between p-1 border-b border-gray-300"><span>${s.name}</span><span class="font-black">${s.score}</span></li>`);
+                if(scores.length===0) list.innerHTML = '<li class="text-center italic text-gray-500">Belum ada data</li>';
+            });
+        }
+
+        // --- COLLISION SIMULATION (Global for Level 1) ---
+        window.initCollisionSim = () => {
+            const canvas = document.getElementById('col-canvas'); if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 200; canvas.width = W; canvas.height = H;
+            const els = { m1: document.getElementById('col-m1'), m2: document.getElementById('col-m2'), v1: document.getElementById('col-v1'), v2: document.getElementById('col-v2'), play: document.getElementById('col-play'), pause: document.getElementById('col-pause'), reset: document.getElementById('col-reset'), v1Disp: document.getElementById('col-v1-disp'), v2Disp: document.getElementById('col-v2-disp') };
+            let running = false, lastTimestamp = null;
+            let s = { m1: parseFloat(els.m1.value), m2: parseFloat(els.m2.value), v1: parseFloat(els.v1.value), v2: parseFloat(els.v2.value) };
+            let x1=100, x2=500, r1, r2;
+            let hasCollided = false; // NEW: Flag untuk mencegah tumbukan berulang
+            
+            function reset() { 
+                s.m1=parseFloat(els.m1.value); s.m2=parseFloat(els.m2.value); s.v1=parseFloat(els.v1.value); s.v2=parseFloat(els.v2.value); 
+                r1=Math.max(12, Math.sqrt(s.m1)*15); r2=Math.max(12, Math.sqrt(s.m2)*15); 
+                x1=100; x2=500; 
+                running=false; lastTimestamp=null; 
+                hasCollided = false; // Reset flag saat tombol reset ditekan
+                updateDisp(); draw(); 
+            }
+            function updateDisp() { if(els.v1Disp) els.v1Disp.innerText=s.v1.toFixed(2); if(els.v2Disp) els.v2Disp.innerText=s.v2.toFixed(2); }
+            function draw() {
+                ctx.clearRect(0,0,W,H);
+                ctx.fillStyle='#dfeefb'; ctx.fillRect(20, H/2-2, W-40, 4);
+                // Gambar Garis Kecepatan
+                drawArrow(x1, H/2, s.v1, '#155e75');
+                drawArrow(x2, H/2, s.v2, '#be185d');
+                
+                ctx.beginPath(); ctx.fillStyle='#2fb6c9'; ctx.arc(x1, H/2, r1, 0, Math.PI*2); ctx.fill(); ctx.fillStyle='white'; ctx.fillText('1', x1-3, H/2+3);
+                ctx.beginPath(); ctx.fillStyle='#ff66b2'; ctx.arc(x2, H/2, r2, 0, Math.PI*2); ctx.fill(); ctx.fillStyle='white'; ctx.fillText('2', x2-3, H/2+3);
+            }
+            function drawArrow(x, y, v, color) {
+                if(Math.abs(v) < 0.1) return;
+                const len = v * 20; 
+                ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 2;
+                ctx.moveTo(x, y - 30); ctx.lineTo(x + len, y - 30); ctx.stroke();
+                ctx.beginPath(); ctx.fillStyle = color;
+                if (v > 0) { ctx.moveTo(x+len, y-35); ctx.lineTo(x+len+5, y-30); ctx.lineTo(x+len, y-25); }
+                else { ctx.moveTo(x+len, y-35); ctx.lineTo(x+len-5, y-30); ctx.lineTo(x+len, y-25); }
+                ctx.fill();
+            }
+            function loop(ts) {
+                if(!document.getElementById('col-canvas')) return;
+                if(!running) { lastTimestamp=null; return; }
+                if(!lastTimestamp) lastTimestamp=ts;
+                const dt = Math.min(0.03, (ts-lastTimestamp)/1000); lastTimestamp=ts;
+                
+                // Update Posisi
+                x1 += s.v1 * 100 * dt; 
+                x2 += s.v2 * 100 * dt;
+                
+                // Cek Tabrakan (Hanya jika belum pernah bertumbukan)
+                if(!hasCollided && x2 - x1 <= r1 + r2) {
+                      const u1=s.v1, u2=s.v2, m1=s.m1, m2=s.m2;
+                      
+                      // Rumus Tumbukan Lenting Sempurna
+                      const v1Final = ((m1 - m2) * u1 + 2 * m2 * u2) / (m1 + m2);
+                      const v2Final = ((m2 - m1) * u2 + 2 * m1 * u1) / (m1 + m2);
+                      
+                      s.v1 = v1Final;
+                      s.v2 = v2Final;
+
+                      // KOREKSI POSISI AGAR TIDAK NEMPEL (OVERLAP)
+                      const overlap = (r1 + r2) - (x2 - x1);
+                      x1 -= overlap / 2 + 1; 
+                      x2 += overlap / 2 + 1; 
+                      
+                      hasCollided = true; // Tandai tumbukan sudah terjadi
+                      updateDisp();
+                }
+
+                // Hentikan simulasi jika bola keluar layar (agar tidak memantul balik)
+                if(x1 + r1 < 0 || x2 - r2 > W) {
+                    running = false;
+                }
+                
+                draw(); requestAnimationFrame(loop);
+            }
+            els.play.onclick=()=>{if(!running){running=true;requestAnimationFrame(loop);}}; els.pause.onclick=()=>{running=false;}; els.reset.onclick=reset;
+            [els.m1,els.m2,els.v1,els.v2].forEach(e=>e.onchange=()=>{if(!running)reset()});
+            reset();
+        };
+
+        function setupSimulation(type) {
+            const box = document.getElementById('quiz-options-cutscene');
+            box.classList.remove('hidden');
+            if (type === 'q1-momentum-interactive') {
+                box.innerHTML = `<div class="sim-stage"><canvas id="col-canvas"></canvas><div class="flex flex-col gap-2 text-xs font-bold"><div class="sim-row"><label class="text-blue-600">Benda 1: Massa <input id="col-m1" type="number" step="0.1" value="0.5">kg, Vel <input id="col-v1" type="number" step="0.1" value="1.0">m/s</label></div><div class="sim-row"><label class="text-pink-600">Benda 2: Massa <input id="col-m2" type="number" step="0.1" value="1.5">kg, Vel <input id="col-v2" type="number" step="0.1" value="-0.5">m/s</label></div><div class="sim-flex"><button id="col-play" class="sim-btn">Play</button><button id="col-pause" class="sim-btn secondary">Pause</button><button id="col-reset" class="sim-btn secondary">Reset</button></div><div class="mt-2 p-1 bg-gray-50 border text-[9px]">v1=<span id="col-v1-disp">1.00</span>, v2=<span id="col-v2-disp">-0.50</span></div></div></div>`;
+                setTimeout(() => window.initCollisionSim(), 50);
+            }
+        }
+    </script>
+</body>
+</html>

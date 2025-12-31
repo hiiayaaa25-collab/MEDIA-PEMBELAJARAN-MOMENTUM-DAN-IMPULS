@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materi Pembelajaran - Physics Adventure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;900&family=Poppins:wght@600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+        body { background: url('https://raw.githubusercontent.com/lorrainemydth-gif/MEDIA_PEMBELAJARAN/3b9f4f62282a6d3295520df7ccbd2c964d8ce135/LKPD%20SISWA%20MEDIA%20PEMBELAJARAN%20ICT%20%282%29.png') center/cover no-repeat, url('assets/lkpd-v3.png') center/cover no-repeat; background-color: #ffffff; }
+        body::before { content: ""; position: fixed; inset: 0; background: rgba(255,255,255,0.15); pointer-events: none; }
+        .card { background: white; border: 3px solid #000; border-radius: 1rem; box-shadow: 8px 8px 0px rgba(0,0,0,0.2); }
+        .button { background: #22c55e; color: white; border: 2px solid #000; padding: 1rem 2rem; border-radius: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-block; }
+        .button:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0px rgba(0,0,0,0.2); }
+        .button.secondary { background: #3b82f6; }
+        .button.warning { background: #f59e0b; }
+        .title { font-family: 'Poppins', sans-serif; -webkit-text-stroke: 2px black; text-shadow: 3px 3px 0px rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen p-4 md:p-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="title text-5xl md:text-6xl font-black text-white mb-4">
+                    📚 MATERI PEMBELAJARAN
+                </h1>
+                <p class="text-xl font-bold text-gray-800 drop-shadow-lg">
+                    Konsep Fisika: Momentum & Impuls
+                </p>
+            </div>
+
+            <!-- Back Button -->
+            <div class="mb-6">
+                <a href="index.html" class="button secondary">← Kembali ke Home</a>
+            </div>
+
+            <!-- Materi Content -->
+            <div class="space-y-6">
+                <!-- Pengantar -->
+                <div class="card p-8">
+                    <h2 class="text-3xl font-black mb-4">🎯 Pengantar</h2>
+                    <p class="text-lg mb-4">
+                        Momentum dan impuls adalah besaran dalam fisika yang muncul akibat benda bergerak dan berinteraksi (bertumbukan) dengan benda lain. Besaran-besaran tersebut akan memengaruhi sifat dan karakteristik suatu benda. Dengan memahami konsep momentum dan impuls, kita dapat menjelaskan berbagai peristiwa dalam kehidupan sehari-hari serta menerapkannya untuk mendukung perkembangan ilmu pengetahuan dan teknologi.
+                    </p>
+                </div>
+
+                <!-- Definisi Momentum -->
+                <div class="card p-8">
+                    <h2 class="text-3xl font-black mb-4">⚡ Apa itu Momentum?</h2>
+                    <p class="text-lg mb-4">
+                        Momentum adalah besaran fisika yang menunjukkan seberapa sulit suatu benda yang bergerak untuk dihentikan.
+                    </p>
+
+                    <p class="text-sm text-gray-700 mb-4">Perhatikan gambar kejadian berikut:</p>
+                    <div class="mb-4 text-center">
+                        <img src="https://raw.githubusercontent.com/AYAA-lab/MEDIA-PEMBELAJARAN-MOMENTUM-IMPULS/a9ff893d5775171ec5aac1ceb62c9ff7d594d2cd/WhatsApp%20Image%202025-12-31%20at%208.37.00%20AM.jpeg" alt="mobil vs sepeda" class="mx-auto block w-11/12 md:w-2/3 lg:w-1/3 max-w-md rounded-lg border-2 border-gray-300 mb-4"/>
+                    </div>
+                    <p class="text-gray-700 mb-4">Jika mobil dan sepeda memiliki kecepatan yang sama (<em><strong>v</strong><sub>m</sub> = <strong>v</strong><sub>s</sub></em>), terlihat dari gambar di atas bahwa dampak dari kerusakannya ternyata mobil memiliki dampak yang lebih besar dibanding sepeda ketika menabrak pohon. Hal ini membuktikan bahwa mobil yang massanya lebih besar dari pada sepeda (<em>m<sub>p</sub> &gt; m<sub>s</sub></em>) akan menyebabkan gerak benda tersebut sulit dihentikan sehingga dapat disimpulkan bahwa: <strong>p ~ m</strong>.</p>
+
+                    <div class="mb-4 text-center">
+                        <img src="https://raw.githubusercontent.com/AYAA-lab/MEDIA-PEMBELAJARAN-MOMENTUM-IMPULS/4b8ada1712ff9f8fcba16e6b558440e706e66769/WhatsApp%20Image%202025-12-31%20at%208.37.00%20AM%20(1).jpeg" alt="peluru vp1 vp2" class="mx-auto block w-11/12 md:w-2/3 lg:w-1/3 max-w-md rounded-lg border-2 border-gray-300 mb-4"/>
+                    </div>
+                    <p class="text-gray-700 mb-4">Jika seseorang pada gambar di atas memiliki peluru yang identik dimana massa peluru 1 sama dengan massa peluru 2 (<em>m<sub>p1</sub> = m<sub>p2</sub></em>), tetapi kedua peluru tersebut diberi kecepatan yang berbeda (<em><strong>v</strong><sub>p1</sub> &gt; <strong>v</strong><sub>p2</sub></em>), maka titik sasaran yang dikenai oleh peluru dengan kecepatan yang besar akan menimbulkan kerusakan yang lebih parah dibanding dengan peluru yang memiliki kecepatan kecil. Hal ini menandakan bahwa semakin besar kecepatan suatu benda, maka semakin sulit benda tersebut dihentikan. Sehingga dapat disimpulkan: <strong>p ~ <span class="font-bold">v</span></strong>.</p>
+
+                    <p class="text-gray-700 mb-4">Berdasarkan analisa di atas, momentum linier dapat ditulis:</p>
+
+                    <div class="mx-auto w-max bg-white border-2 border-black rounded-lg px-6 py-4">
+                        <div class="flex items-center justify-center">
+                            <p class="font-mono text-sm text-center mb-0"><strong>p</strong> = <span class="font-sans font-normal">m</span> × <strong>v</strong></p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-left">
+                        <p class="font-bold mb-2">Keterangan :</p>
+                        <p class="text-sm"><strong>p</strong> = momentum (kg·m/s)</p>
+                        <p class="text-sm">m = massa benda (kg)</p>
+                        <p class="text-sm"><strong>v</strong> = kecepatan benda (m/s)</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <button id="openVideoBtn2" class="button warning">▶ Tonton penjelasan singkat (Momentum)</button>
+                    </div>
+                </div>
+
+                <!-- Definisi Impuls -->
+                <div class="card p-8">
+                    <h2 class="text-3xl font-black mb-4">💥 Impuls (I)</h2>
+                    <p class="text-lg mb-4 text-justify">
+                        <strong>Impuls (I)</strong> merupakan gaya kontak rata-rata F yang bekerja pada suatu benda yang terjadi dalam selang waktu yang sangat singkat (Δt ~ 0).
+                    </p>
+                    <p class="text-lg mb-4 text-justify">Untuk memahami konsep impuls perhatikan gambar berikut:</p>
+                    <img src="https://raw.githubusercontent.com/AYAA-lab/MEDIA-PEMBELAJARAN-MOMENTUM-IMPULS/02d060c363c0bdc04a91db9e85088221132b3a57/WhatsApp%20Image%202025-12-31%20at%208.37.00%20AM%20(2).jpeg" alt="Ilustrasi impuls" class="mx-auto block w-11/12 md:w-2/3 lg:w-1/3 max-w-md rounded-lg border-2 border-gray-300 mb-4">
+
+                    <p class="text-sm mb-2 text-justify">Berdasarkan gambar di atas, pada bola diberikan gaya sentuh (F) dengan selang waktu (Δt) yang sangat singkat, sehingga menghasilkan efek pada bola tersebut semakin besar. Jika diberikan gaya F yang sama tetapi selang waktu sentuh Δt yang lebih lama maka akan menimbulkan efek pada bola tersebut kurang maksimal dibandingkan pada keadaan pertama. Efek dari pemberian gaya rata-rata F pada suatu benda dalam selang waktu Δt tertentu inilah yang disebut sebagai Impuls (I).</p>
+
+                    <p class="text-sm mb-2 text-justify">Dari hubungan <strong>I</strong> = <strong>F</strong>·Δt dapat disimpulkan: jika Δt dipertahankan konstan, maka <strong>I</strong> sebanding dengan <strong>F</strong> (I ∝ F); sedangkan jika <strong>I</strong> tetap konstan, maka <strong>F</strong> berbanding terbalik dengan Δt (F ∝ 1/Δt).</p>
+
+                    <p class="font-mono text-lg text-center my-4">Sehingga diperoleh:<br>
+                        <strong>F</strong> = <strong>I</strong>/Δt<br>
+                        atau<br>
+                        <strong>I</strong> = <strong>F</strong>·Δt<br>
+                        <strong>I</strong> = <strong>F</strong>·(t2 - t1)
+                    </p>
+
+                    <p class="text-sm mt-4 text-justify">Jika gaya <strong>F</strong> yang diberikan pada benda berubah terhadap waktu <strong>F</strong>(t), maka konsep impuls (<strong>I</strong>) dapat ditulis dalam bentuk pengintegralan yaitu :</p>
+
+                    <p class="font-mono text-lg text-center my-4"><strong>I</strong> = ∫ <strong>F</strong>(t) dt</p>
+
+                    <p class="text-sm mt-4 text-justify">Persamaan di atas dapat dianalisa bahwa gaya impulsif <strong>F</strong> yang berubah terhadap waktu <strong>t</strong>, dapat ditampilkan seperti gambar di bawah ini :</p>
+                    <img src="https://raw.githubusercontent.com/AYAA-lab/MEDIA-PEMBELAJARAN-MOMENTUM-IMPULS/14feeed6b4de6ff0f11b9f3aecb07c2ef3d2b4b8/WhatsApp%20Image%202025-12-31%20at%208.45.18%20AM.jpeg" alt="Grafik F-t" class="mx-auto block w-11/12 md:w-2/3 lg:w-1/3 max-w-md rounded-lg border-2 border-gray-300 mb-4">
+
+                    <p class="text-lg font-bold text-center mt-4">Nilai impuls (I) berdasarkan konsep dan grafik F-t di atas dapat disimpulkan bahwa :</p>
+
+                    <div class="bg-gray-50 px-6 py-4 rounded-lg border-2 border-black mt-4 mx-auto w-max text-center">
+                        <p class="font-mono text-sm my-0"><strong>Impuls (I) = luas daerah di bawah grafik F - t</strong></p>
+                    </div>
+
+                    <div class="mt-4 text-left">
+                        <p class="font-bold mb-2">Keterangan :</p>
+                        <ul class="list-inside list-disc text-sm mt-1">
+                            <li>I = Impuls (N·s atau kg·m/s)</li>
+                            <li><strong>F</strong> = Gaya Impulsif (Newton)</li>
+                            <li>Δt = Waktu sentuhan antara gaya dan benda (s)</li>
+                            <li>Impuls (<strong>I</strong>) termasuk besaran vektor yang arahnya selalu searah dengan gaya impulsif (<strong>F</strong>)</li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-4 text-left">
+                        <button id="openVideoBtn3" class="button warning">▶ Tonton penjelasan singkat (Impuls)</button>
+                    </div>
+                </div> 
+
+                <!-- Hubungan Impuls (I) dan Momentum (p) -->
+                <div class="card p-8">
+                    <h2 class="text-3xl font-black mb-4">🔗 Hubungan Impuls (I) dan Momentum (p)</h2>
+
+                    <p class="text-lg mb-2">Perhatikan kejadian pada gambar berikut !</p>
+                    <div class="mb-4 text-center">
+                        <img src="https://raw.githubusercontent.com/AYAA-lab/MEDIA-PEMBELAJARAN-MOMENTUM-IMPULS/c909b7db6a4cf1353b2778b974afbc1a4cdd55fd/WhatsApp%20Image%202025-12-31%20at%209.47.11%20AM.jpeg" alt="ilustrasi impuls momentum" class="mx-auto block w-11/12 md:w-2/3 lg:w-1/3 max-w-md rounded-lg border-2 border-gray-300 mb-4"/>
+                    </div>
+
+                    <p class="text-sm mb-2 text-justify">Suatu bola yang mula-mula bergerak dengan kecepatan <strong><span class="font-bold">v</span></strong><sub>1</sub> diberi gaya sebesar <strong><span class="font-bold">F</span></strong>. Gaya tersebut bekerja pada bola sehingga mengakibatkan bola tersebut bergerak dipercepat dan kecepatannya berubah menjadi <strong><span class="font-bold">v</span></strong><sub>2</sub>. Dalam kejadian ini bola akan bergerak dengan percepatan konstan (GLBB) dalam rentang waktu tertentu (Δt), sehingga berlaku hukum II Newton, dan dapat ditulis :</p>
+
+                    <p class="font-mono text-lg text-center my-2">Σ<strong>F</strong> = m · a<br>
+                    <strong>F</strong> = m · (<strong><span class="font-bold">v</span></strong><sub>2</sub> − <strong><span class="font-bold">v</span></strong><sub>1</sub>) / Δt<br>
+                    <strong>F</strong> · Δt = m · (<strong><span class="font-bold">v</span></strong><sub>2</sub> − <strong><span class="font-bold">v</span></strong><sub>1</sub>)<br>
+                    <strong>F</strong> · Δt = m · <strong><span class="font-bold">v</span></strong><sub>2</sub> − m · <strong><span class="font-bold">v</span></strong><sub>1</sub></p>
+
+                    <div class="mx-auto w-max bg-white border-2 border-black rounded-lg px-6 py-4 text-center my-4">
+                        <p class="font-mono text-lg my-0"><strong>I</strong> = <strong><span class="font-bold">p</span></strong><sub>2</sub> − <strong><span class="font-bold">p</span></strong><sub>1</sub> &nbsp; atau &nbsp; <strong>I</strong> = <strong>Δp</strong></p>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg border-2 border-black mt-4">
+                        <p class="text-sm my-0 text-center"><strong>Impuls yang dikerjakan pada suatu benda sama dengan perubahan momentum yang dialami benda tersebut, yaitu beda antara momentum akhir dengan momentum awal.</strong></p>
+                    </div>
+
+                    <p class="text-sm mt-4 text-justify">Jika gaya <strong>F</strong> yang diberikan pada benda berubah terhadap waktu <strong>F</strong>(t), maka konsep impuls (<strong>I</strong>) dapat ditulis dalam bentuk pengintegralan yaitu :</p>
+
+                    <div class="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-300 mb-4 mx-auto w-max">
+                        <p class="font-mono text-lg text-center my-0"><strong>Δp = ∫ <strong>F</strong>(t) dt</strong></p>
+                        <p class="text-xs text-gray-500 text-center mt-1 italic">Untuk gaya konstan, persamaan ini menjadi Δp = F × Δt.</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <button id="openVideoBtn4" class="button warning">▶ Tonton penjelasan singkat (Hubungan)</button>
+                    </div>
+                </div>
+
+                <!-- Hukum Kekekalan Momentum Linier -->
+                <div class="card p-8">
+                    <h2 class="text-3xl font-black mb-4">⚖️ Hukum Kekekalan Momentum Linier</h2>
+
+                    <p class="text-lg mb-4 text-justify">Jika terdapat dua buah benda yang bertumbukan maka akan mempengaruhi pergerakan kedua benda tersebut setelah bertumbukan. Perhatikan gambar berikut !</p>
+                    <div class="mb-4 text-center">
+                        <img src="https://raw.githubusercontent.com/AYAA-lab/MEDIA-PEMBELAJARAN-MOMENTUM-IMPULS/ec5a96d7237f5d957cb9896759a4a1aebab1253f/WhatsApp%20Image%202025-12-31%20at%209.59.15%20AM%20(1).jpeg" alt="tumbukan dua benda" class="mx-auto block w-11/12 md:w-2/3 lg:w-1/3 max-w-md rounded-lg border-2 border-gray-300 mb-4"/>
+                    </div>
+
+                    <p class="text-sm mb-2 text-justify">Benda A bermassa <strong>m</strong><sub>a</sub> dan benda B bermassa <strong>m</strong><sub>b</sub> bergerak berlawanan arah dengan kecepatan <strong><span class="font-bold">v</span></strong><sub>a</sub> dan <strong><span class="font-bold">v</span></strong><sub>b</sub>. Ketika kedua bola tersebut bertumbukan dengan selang waktu (Δt) yang sama, dari kejadian tersebut dapat dianalisa bola A memberikan gaya pada benda B (<strong><span class="font-bold">F</span></strong><sub>ab</sub>) dan benda B mengerjakan gaya kepada benda A (<strong><span class="font-bold">F</span></strong><sub>ba</sub>) yang sama besar tetapi arahnya berlawanan (hukum III Newton), sehingga dapat ditulis:</p>
+
+                    <p class="font-mono text-lg text-center my-2"><strong><span class="font-bold">F</span></strong><sub>ab</sub> = −<strong><span class="font-bold">F</span></strong><sub>ba</sub><br>
+                    <strong><span class="font-bold">I</span></strong><sub>a</sub>/Δt = −<strong><span class="font-bold">I</span></strong><sub>b</sub>/Δt<br>
+                    <strong><span class="font-bold">I</span></strong><sub>a</sub> = −<strong><span class="font-bold">I</span></strong><sub>b</sub><br>
+                    Δ<strong><span class="font-bold">p</span></strong><sub>a</sub> = −Δ<strong><span class="font-bold">p</span></strong><sub>b</sub><br>
+                    <strong><span class="font-bold">p</span></strong><sub>a</sub><sup>′</sup> − <strong><span class="font-bold">p</span></strong><sub>a</sub> = −( <strong><span class="font-bold">p</span></strong><sub>b</sub><sup>′</sup> − <strong><span class="font-bold">p</span></strong><sub>b</sub> )</p>
+
+                    <p class="font-mono text-lg text-center my-2">m<sub>a</sub><strong><span class="font-bold">v</span></strong><sub>a</sub><sup>′</sup> − m<sub>a</sub><strong><span class="font-bold">v</span></strong><sub>a</sub> = −( m<sub>b</sub><strong><span class="font-bold">v</span></strong><sub>b</sub><sup>′</sup> − m<sub>b</sub><strong><span class="font-bold">v</span></strong><sub>b</sub> )<br>
+                    m<sub>a</sub><strong><span class="font-bold">v</span></strong><sub>a</sub><sup>′</sup> − m<sub>a</sub><strong><span class="font-bold">v</span></strong><sub>a</sub> = m<sub>b</sub><strong><span class="font-bold">v</span></strong><sub>b</sub> − m<sub>b</sub><strong><span class="font-bold">v</span></strong><sub>b</sub><sup>′</sup><br>
+                    m<sub>a</sub><strong><span class="font-bold">v</span></strong><sub>a</sub> + m<sub>b</sub><strong><span class="font-bold">v</span></strong><sub>b</sub> = m<sub>a</sub><strong><span class="font-bold">v</span></strong><sub>a</sub><sup>′</sup> + m<sub>b</sub><strong><span class="font-bold">v</span></strong><sub>b</sub><sup>′</sup></p>
+
+                    <div class="mx-auto w-max bg-white border-2 border-black rounded-lg px-6 py-4 text-center my-4">
+                        <p class="font-mono text-lg my-0"><strong>∑<strong>p</strong> = ∑<strong>p</strong><sup>′</sup></strong></p>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg border-2 border-black mt-4">
+                        <p class="text-sm my-0 text-center"><strong>Berdasarkan analisa kejadian tumbukan dua buah benda tersebut dan penurunan persamaan di atas, maka konsep hukum kekekalan momentum linier dapat dinyatakan : Dalam peristiwa tumbukan sentral, momentum total sistem sesaat sebelum tumbukan sama dengan momentum total sistem sesaat setelah tumbukan, asalkan tidak ada gaya luar yang bekerja pada sistem tersebut.</strong></p>
+                    </div>
+
+                    <div class="mt-4">
+                        <button id="openVideoBtn6" class="button warning">▶ Tonton penjelasan singkat (Hukum Kekekalan)</button>
+                    </div>
+                </div>
+
+                <!-- Koefisien Restitusi -->
+                <div class="card p-8">
+                    <h2 class="text-3xl font-black mb-4">🧮 Koefisien Restitusi</h2>
+                    <p class="text-lg mb-4">
+                        <strong>Koefisien restitusi (e)</strong> adalah bilangan tak berdimensi yang menunjukkan seberapa "elastis" tumbukan antara dua benda. Nilai e berkisar antara 0 hingga 1:
+                        <ul class="list-inside list-disc mt-2 text-sm text-gray-700">
+                            <li>e = 1 → tumbukan lenting sempurna (ideal: tidak ada kehilangan energi kinetik)</li>
+                            <li>0 &lt; e &lt; 1 → tumbukan lenting sebagian (sebagian energi kinetik hilang, benda memantul dengan energi lebih kecil)</li>
+                            <li>e = 0 → tumbukan tak lenting sama sekali (benda menempel setelah tumbukan)</li>
+                        </ul>
+                        Secara matematis, untuk tumbukan satu dimensi antara dua benda:
+                    </p>
+                    <div class="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-300 mb-4">
+                        <p class="font-mono text-lg text-center">
+                            <strong>e = (v2' - v1') / (v1 - v2)</strong>
+                        </p>
+                        <p class="text-sm text-gray-600 text-center mt-2">
+                            di mana v1 dan v2 adalah kecepatan sebelum tumbukan, v1' dan v2' adalah kecepatan setelah tumbukan (dengan arah yang sesuai).
+                        </p>
+                    </div>
+                    <p class="text-gray-700 mb-4">Koefisien restitusi membantu menentukan energi kinetik yang hilang dan kecepatan relatif setelah tumbukan — penting untuk memahami pantulan bola, tabrakan kendaraan kecil, dan eksperimen fisika sederhana. <span class="text-sm italic">Catatan: perhatikan urutan kecepatan dan arah ketika menerapkan rumus; pada analisis satu dimensi nilai <strong>e</strong> umumnya dinyatakan sebagai bilangan non-negatif antara 0 dan 1, sehingga pastikan konvensi tanda konsisten.</span></p>
+                    <div class="mt-4">
+                        <button id="openVideoBtn7" class="button warning">▶ Tonton penjelasan singkat (Koefisien Restitusi)</button>
+                    </div>
+                </div>
+
+                <!-- Jenis Tumbukan (stacked) -->
+                <div class="card p-8">
+                    <h2 class="text-3xl font-black mb-4">💥 Jenis-jenis Tumbukan</h2>
+
+                    <p class="text-sm text-gray-700 mb-4">Berdasarkan hukum kekekalan momentum yang telah dibahas pada kegiatan pembelajaran 1 di modul ini bahwa jika tidak ada gaya luar, momentum linier sistem sesaat sebelum dan sesudah tumbukan adalah konstan. Jadi pada setiap tumbukan, akan berlaku hukum kekekalan momentum linier.</p>
+
+                    <p class="text-sm text-gray-700 mb-4">Terdapat parameter lain yang akan mempengaruhi jenis tumbukan yang dialami oleh benda yaitu koefisien restitusi (<strong>e</strong>). Koefisien restitusi merupakan derajat sentuhan suatu benda akibat tumbukan yang dapat dihitung dari negatif perbandingan selisih kecepatan benda setelah tumbukan (Δv′) dengan selisih kecepatan benda sebelum tumbukan (Δv), sehingga koefisien restitusi dapat ditulis:</p>
+
+                    <div class="mx-auto w-max bg-white border-2 border-black rounded-lg px-6 py-4 text-center mb-4">
+                        <p class="font-mono text-sm my-0"><strong>e = −Δv′/Δv  &nbsp; atau &nbsp; e = −(v₂′ − v₁′)/(v₂ − v₁)</strong></p>
+                    </div>
+
+                    <p class="text-sm text-gray-700 mb-4">Setelah memahami parameter ini, maka sekarang kita akan membahas berbagai jenis tumbukan, yaitu: tumbukan lenting sempurna, tumbukan lenting sebagian dan tumbukan tidak lenting sama sekali.</p>
+
+                    <div class="flex flex-col gap-6">
+                        <div class="bg-red-50 p-6 rounded-lg border-2 border-red-300 w-full leading-relaxed">
+                            <h3 class="font-bold text-lg mb-2">Tumbukan Lenting Sempurna</h3>
+                            <p class="text-sm mb-2">Perhatikan gambar kejadian berikut!</p>
+                            <div class="mb-4 text-center">
+                                <img src="https://raw.githubusercontent.com/AYAA-lab/MEDIA-PEMBELAJARAN-MOMENTUM-IMPULS/08f2a8fb0bed36eea12006d97b01732a49103742/WhatsApp%20Image%202025-12-31%20at%2010.14.18%20AM.jpeg" alt="tumbukan lenting sempurna" class="mx-auto block w-11/12 md:w-2/3 lg:w-1/3 max-w-md rounded-lg border-2 border-gray-300 mb-4"/>
+                            </div>
+                            <p class="text-sm">Sebuah partikel jatuh bebas dari ketinggian <em>h1</em>, dan menumbuk lantai. Kecepatan sesaat partikel sebelum menumbuk bumi adalah <strong><span class="font-bold">v</span></strong>. Sesaat setelah menumbuk lantai partikel tersebut bergerak vertikal ke atas dengan kecepatan awal <strong><span class="font-bold">v</span></strong><sup>′</sup>. Partikel tersebut mencapai titik tertinggi sebesar <em>h2</em>, dimana dari gambar diperoleh <em>h2 = h1</em>. Karena terjadi hal demikian, maka dapat disimpulkan <strong><span class="font-bold">v</span></strong> = <strong><span class="font-bold">v</span></strong><sup>′</sup>.</p>
+                            <p class="text-sm mt-2">Berdasarkan analisis di atas dapat ditarik kesimpulan bahwa suatu benda mengalami <strong>tumbukan lenting sempurna</strong> jika memiliki syarat sebagai berikut:</p>
+                            <ul class="list-inside list-disc text-sm text-gray-700 mt-1">
+                                <li>Berlaku hukum kekekalan momentum.</li>
+                                <li>Tidak ada energi gerak yang hilang pada benda sebelum dan sesudah terjadinya tumbukan (berlaku hukum kekekalan energi mekanik).</li>
+                                <li>Memiliki koefisien restitusi sama dengan <strong>1 (e = 1)</strong>.</li>
+                            </ul>
+                            <p class="text-xs text-gray-600 mt-2">Tumbukan lenting sempurna akan ditemui jika terjadi tumbukan pada partikel-partikel yang sangat kecil misalnya tumbukan antara proton dan neutron.</p>
+                        </div>
+
+                        <div class="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-400 w-full leading-relaxed">
+                            <h3 class="font-bold text-lg mb-2">Tumbukan Lenting Sebagian</h3>
+                            <p class="text-sm mb-2">Perhatikan gambar kejadian berikut!</p>
+                            <div class="mb-4 text-center">
+                                <img src="https://raw.githubusercontent.com/AYAA-lab/MEDIA-PEMBELAJARAN-MOMENTUM-IMPULS/13683bfe65f6623d917f9f6ba67004034d536d35/WhatsApp%20Image%202025-12-31%20at%2010.22.56%20AM.jpeg" alt="tumbukan lenting sebagian" class="mx-auto block w-11/12 md:w-2/3 lg:w-1/3 max-w-md rounded-lg border-2 border-gray-300 mb-4"/>
+                            </div>
+                            <p class="text-sm">Sebuah bola jatuh bebas dari ketinggian <em>h1</em>, setelah menumbuk lantai bola tersebut mengalami gerak vertikal ke atas dan bola hanya mencapai ketinggian <em>h2</em>, dimana <em>h2 &lt; h1</em>. Pada peristiwa ini terjadi tumbukan <strong>lenting sebagian</strong>, karena pada peristiwa tersebut ada energi gerak yang hilang yang dimiliki oleh bola tersebut, sehingga bola tidak mampu mencapai pada ketinggian semula.</p>
+                            <p class="text-sm mt-2">Berdasarkan analisa di atas dapat ditarik kesimpulan bahwa suatu benda mengalami tumbukan lenting sebagian jika memiliki syarat sebagai berikut:</p>
+                            <ul class="list-inside list-disc text-sm text-gray-700 mt-1">
+                                <li>Berlaku hukum kekekalan momentum.</li>
+                                <li>Tidak berlaku hukum kekekalan energi mekanik, karena pada peristiwa ini ada energi gerak yang hilang pada benda.</li>
+                                <li>Setelah tumbukan benda bergerak sendiri-sendiri (tidak menyatu).</li>
+                                <li>Memiliki nilai koefisien restitusi (e) yaitu <strong>0 &lt; e &lt; 1</strong>.</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-orange-50 p-6 rounded-lg border-2 border-orange-300 w-full leading-relaxed">
+                            <h3 class="font-bold text-lg mb-2">Tumbukan tidak lenting sama sekal</h3>
+                            <p class="text-sm mb-2">Perhatikan gambar kejadian berikut!</p>
+                            <div class="mb-4 text-center">
+                                <img src="https://raw.githubusercontent.com/AYAA-lab/MEDIA-PEMBELAJARAN-MOMENTUM-IMPULS/f498dbd2084f0619b650948fd0b5a6fa62e480a5/WhatsApp%20Image%202025-12-31%20at%2010.25.52%20AM.jpeg" alt="tumbukan tak lenting" class="mx-auto block w-11/12 md:w-2/3 lg:w-1/3 max-w-md rounded-lg border-2 border-gray-300 mb-4"/>
+                            </div>
+                            <p class="text-sm">Peristiwa di atas merupakan contoh terjadinya tumbukan tidak lenting sama sekali. Pada tumbukan jenis ini, setelah terjadi tumbukan, maka kedua benda tersebut menyatu dan bergerak bersama-sama sehingga setelah tumbukan kedua benda tersebut memiliki kecepatan yang sama (<strong>v'_1 = v'_2 = v'</strong>).</p>
+                            <p class="text-sm mt-2">Adapun syarat suatu benda terjadi tumbukan tidak lenting sama sekali yaitu:</p>
+                            <ul class="list-inside list-disc text-sm text-gray-700 mt-1">
+                                <li>Berlaku hukum kekekalan momentum.</li>
+                                <li>Tidak berlaku hukum kekekalan energi mekanik, karena terdapat energi gerak yang hilang pada diri benda.</li>
+                                <li>Benda menyatu setelah tumbukan sehingga kecepatan setelah tumbukan sama dan bergerak ke arah yang sama (v₁′ = v₂′ = v′).</li>
+                                <li>Memiliki nilai koefisien restitusi sama dengan nol (e = 0).</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button id="openVideoBtn5" class="button warning">▶ Tonton penjelasan singkat (Jenis Tumbukan)</button>
+                    </div>
+                </div>
+
+
+
+                <!-- Aplikasi dalam Kehidupan -->
+                <div class="card p-8">
+                    <h2 class="text-3xl font-black mb-4">🌍 Aplikasi Momentum dan Impuls dalam Kehidupan Sehari-hari</h2>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                        <li><strong>Airbag (Kantong Udara)</strong></li>
+                        <li><strong>Sarung Tinju</strong></li>
+                        <li><strong>Matras</strong></li>
+                        <li><strong>Crumple Zone pada Mobil</strong></li>
+                    </ol>
+                    <div class="mt-4">
+                        <button id="openVideoBtnApp" class="button warning">▶ Tonton: Aplikasi Momentum & Impuls</button>
+                    </div>
+                </div>
+
+                <!-- Materi PDF -->
+                <div class="card p-8">
+                    <h2 class="text-3xl font-black mb-4">📄 Materi Lengkap (PDF)</h2>
+                    <p class="text-lg mb-4">
+                        Untuk pembelajaran yang lebih mendalam, unduh atau baca materi lengkap tentang Momentum & Impuls dalam format PDF.
+                    </p>
+                    <div class="mb-4">
+                        <a href="materi-fisika.pdf" class="button secondary" target="_blank">📥 Download PDF</a>
+                    </div>
+                    <div class="border-2 border-gray-300 rounded-lg overflow-hidden">
+                        <embed src="materi-fisika.pdf" type="application/pdf" width="100%" height="600px" />
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">
+                        Jika PDF tidak muncul, pastikan browser Anda mendukung tampilan PDF atau klik tombol download di atas.
+                    </p>
+                </div>
+
+                </div>
+
+                <!-- Call to Action -->
+                <div class="card p-8 bg-green-50 border-4 border-green-600 text-center">
+                    <h2 class="text-3xl font-black mb-4 text-green-700">🎮 Siap Berlatih?</h2>
+                    <p class="text-lg mb-6 text-gray-700">Sekarang saatnya menerapkan konsep ini dalam game! Mainkan Physics Adventure untuk pengalaman belajar yang menyenangkan.</p>
+                    <a href="liyaa.html" class="button w-full md:w-auto py-4 px-8 text-xl">MULAI BERMAIN</a>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <!-- In-page video modal for Jenis Tumbukan link -->
+            <!-- In-page video modal for Hukum Kekekalan Momentum link -->
+            <div id="videoModal6" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 hidden z-50">
+                <div class="bg-white rounded-lg overflow-hidden max-w-3xl w-full mx-4">
+                    <div class="p-4 flex justify-between items-center border-b">
+                        <h3 class="font-bold">Video: Hukum Kekekalan Momentum</h3>
+                        <button id="closeVideoBtn6" class="button">Tutup</button>
+                    </div>
+                    <div class="aspect-video">
+                        <iframe id="videoIframe6" width="100%" height="100%" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <div id="videoModal5" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 hidden z-50">
+                <div class="bg-white rounded-lg overflow-hidden max-w-3xl w-full mx-4">
+                    <div class="p-4 flex justify-between items-center border-b">
+                        <h3 class="font-bold">Video: Jenis-jenis Tumbukan</h3>
+                        <button id="closeVideoBtn5" class="button">Tutup</button>
+                    </div>
+                    <div class="aspect-video">
+                        <iframe id="videoIframe5" width="100%" height="100%" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- In-page video modal for Hubungan link -->
+            <div id="videoModal4" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 hidden z-50">
+                <div class="bg-white rounded-lg overflow-hidden max-w-3xl w-full mx-4">
+                    <div class="p-4 flex justify-between items-center border-b">
+                        <h3 class="font-bold">Video: Hubungan Momentum dan Impuls</h3>
+                        <button id="closeVideoBtn4" class="button">Tutup</button>
+                    </div>
+                    <div class="aspect-video">
+                        <iframe id="videoIframe4" width="100%" height="100%" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- In-page video modal for Momentum link -->
+            <div id="videoModal2" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 hidden z-50">
+                <div class="bg-white rounded-lg overflow-hidden max-w-3xl w-full mx-4">
+                    <div class="p-4 flex justify-between items-center border-b">
+                        <h3 class="font-bold">Video: Penjelasan Momentum</h3>
+                        <button id="closeVideoBtn2" class="button">Tutup</button>
+                    </div>
+                    <div class="aspect-video">
+                        <iframe id="videoIframe2" width="100%" height="100%" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- In-page video modal for Impuls link -->
+            <div id="videoModal3" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 hidden z-50">
+                <div class="bg-white rounded-lg overflow-hidden max-w-3xl w-full mx-4">
+                    <div class="p-4 flex justify-between items-center border-b">
+                        <h3 class="font-bold">Video: Penjelasan Impuls</h3>
+                        <button id="closeVideoBtn3" class="button">Tutup</button>
+                    </div>
+                    <div class="aspect-video">
+                        <iframe id="videoIframe3" width="100%" height="100%" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- In-page video modal for Koefisien Restitusi -->
+            <div id="videoModal7" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 hidden z-50">
+                <div class="bg-white rounded-lg overflow-hidden max-w-3xl w-full mx-4">
+                    <div class="p-4 flex justify-between items-center border-b">
+                        <h3 class="font-bold">Video: Koefisien Restitusi</h3>
+                        <button id="closeVideoBtn7" class="button">Tutup</button>
+                    </div>
+                    <div class="aspect-video">
+                        <iframe id="videoIframe7" width="100%" height="100%" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- In-page video modal for Aplikasi (App) -->
+            <div id="videoModalApp" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 hidden z-50">
+                <div class="bg-white rounded-lg overflow-hidden max-w-3xl w-full mx-4">
+                    <div class="p-4 flex justify-between items-center border-b">
+                        <h3 class="font-bold">Video: Aplikasi Momentum & Impuls</h3>
+                        <button id="closeVideoBtnApp" class="button">Tutup</button>
+                    </div>
+                    <div class="aspect-video">
+                        <iframe id="videoIframeApp" width="100%" height="100%" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-12 text-white">
+                <p class="text-lg font-bold">Physics Adventure © 2025</p>
+                <p class="text-sm opacity-80">Educational Game for Physics Learning</p>
+            </div>
+
+            <script>
+                (function(){
+                    const openBtn = document.getElementById('openVideoBtn2');
+                    const modal = document.getElementById('videoModal2');
+                    const closeBtn = document.getElementById('closeVideoBtn2');
+                    const iframe = document.getElementById('videoIframe2');
+                    const embedSrc = 'https://www.youtube.com/embed/dhYdqnKyfSY?si=bgkpthsla1mWAABE&autoplay=1';
+                    function open(){ iframe.src = embedSrc; modal.classList.remove('hidden'); }
+                    function close(){ modal.classList.add('hidden'); iframe.src = ''; }
+                    openBtn && openBtn.addEventListener('click', open);
+                    closeBtn && closeBtn.addEventListener('click', close);
+                    modal && modal.addEventListener('click', (e)=>{ if(e.target===modal) close(); });
+                })();
+            </script>
+
+            <script>
+                (function(){
+                    const openBtn3 = document.getElementById('openVideoBtn3');
+                    const modal3 = document.getElementById('videoModal3');
+                    const closeBtn3 = document.getElementById('closeVideoBtn3');
+                    const iframe3 = document.getElementById('videoIframe3');
+                    const embedSrc3 = 'https://www.youtube.com/embed/Q7fQApv6TVc?si=D8T89Snm9r5DbD4Y&autoplay=1';
+                    function open3(){ iframe3.src = embedSrc3; modal3.classList.remove('hidden'); }
+                    function close3(){ modal3.classList.add('hidden'); iframe3.src = ''; }
+                    openBtn3 && openBtn3.addEventListener('click', open3);
+                    closeBtn3 && closeBtn3.addEventListener('click', close3);
+                    modal3 && modal3.addEventListener('click', (e)=>{ if(e.target===modal3) close3(); });
+                })();
+            </script>
+
+            <script>
+                (function(){
+                    const openBtn4 = document.getElementById('openVideoBtn4');
+                    const modal4 = document.getElementById('videoModal4');
+                    const closeBtn4 = document.getElementById('closeVideoBtn4');
+                    const iframe4 = document.getElementById('videoIframe4');
+                    const embedSrc4 = 'https://www.youtube.com/embed/PCnlG7s0_RE?si=_OEEiCpGyzo--JpQ&autoplay=1';
+                    function open4(){ iframe4.src = embedSrc4; modal4.classList.remove('hidden'); }
+                    function close4(){ modal4.classList.add('hidden'); iframe4.src = ''; }
+                    openBtn4 && openBtn4.addEventListener('click', open4);
+                    closeBtn4 && closeBtn4.addEventListener('click', close4);
+                    modal4 && modal4.addEventListener('click', (e)=>{ if(e.target===modal4) close4(); });
+                })();
+            </script>
+
+            <script>
+                (function(){
+                    const openBtn5 = document.getElementById('openVideoBtn5');
+                    const modal5 = document.getElementById('videoModal5');
+                    const closeBtn5 = document.getElementById('closeVideoBtn5');
+                    const iframe5 = document.getElementById('videoIframe5');
+                    const embedSrc5 = 'https://www.youtube.com/embed/l7gRj7scWYc?si=Ah6gdAE0ymG2r-3v&autoplay=1';
+                    function open5(){ iframe5.src = embedSrc5; modal5.classList.remove('hidden'); }
+                    function close5(){ modal5.classList.add('hidden'); iframe5.src = ''; }
+                    openBtn5 && openBtn5.addEventListener('click', open5);
+                    closeBtn5 && closeBtn5.addEventListener('click', close5);
+                    modal5 && modal5.addEventListener('click', (e)=>{ if(e.target===modal5) close5(); });
+                })();
+            </script>
+                        <script>
+                            (function(){
+                                const openBtn7 = document.getElementById('openVideoBtn7');
+                                const modal7 = document.getElementById('videoModal7');
+                                const closeBtn7 = document.getElementById('closeVideoBtn7');
+                                const iframe7 = document.getElementById('videoIframe7');
+                                const embedSrc7 = 'https://www.youtube.com/embed/-DkT6y41kwg?si=g9lV5C1kSrr-bEwr&autoplay=1';
+                                function open7(){ iframe7.src = embedSrc7; modal7.classList.remove('hidden'); }
+                                function close7(){ modal7.classList.add('hidden'); iframe7.src = ''; }
+                                openBtn7 && openBtn7.addEventListener('click', open7);
+                                closeBtn7 && closeBtn7.addEventListener('click', close7);
+                                modal7 && modal7.addEventListener('click', (e)=>{ if(e.target===modal7) close7(); });
+                            })();
+                        </script>
+
+                        <script>
+                            (function(){
+                                const openBtnApp = document.getElementById('openVideoBtnApp');
+                                const modalApp = document.getElementById('videoModalApp');
+                                const closeBtnApp = document.getElementById('closeVideoBtnApp');
+                                const iframeApp = document.getElementById('videoIframeApp');
+                                const embedSrcApp = 'https://www.youtube.com/embed/R87NBdP5GCc?si=DiN3Ixn_U8_3HGm0&autoplay=1';
+                                function openApp(){ iframeApp.src = embedSrcApp; modalApp.classList.remove('hidden'); }
+                                function closeApp(){ modalApp.classList.add('hidden'); iframeApp.src = ''; }
+                                openBtnApp && openBtnApp.addEventListener('click', openApp);
+                                closeBtnApp && closeBtnApp.addEventListener('click', closeApp);
+                                modalApp && modalApp.addEventListener('click', (e)=>{ if(e.target===modalApp) closeApp(); });
+                            })();
+                        </script>
+            
+        </div>
+    </div>
+</body>
+</html>

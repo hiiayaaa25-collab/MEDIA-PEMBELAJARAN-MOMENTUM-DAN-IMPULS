@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Adventure - Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;900&family=Poppins:wght@600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Fredoka', sans-serif; }
+        /* Background: use LKPD design from repo (raw GitHub). Keeps local fallback if needed. */
+        body { background: url('https://raw.githubusercontent.com/lorrainemydth-gif/MEDIA_PEMBELAJARAN/3b9f4f62282a6d3295520df7ccbd2c964d8ce135/LKPD%20SISWA%20MEDIA%20PEMBELAJARAN%20ICT%20%282%29.png') center/cover no-repeat, url('assets/lkpd-v3.png') center/cover no-repeat; background-color: #ffffff; }
+        /* Subtle translucent overlay for readability */
+        body::before { content: ""; position: fixed; inset: 0; background: rgba(255,255,255,0.15); pointer-events: none; }
+        .card { background: white; border: 3px solid #000; border-radius: 1rem; box-shadow: 8px 8px 0px rgba(0,0,0,0.2); }
+        .button { background: #22c55e; color: white; border: 2px solid #000; padding: 1rem 2rem; border-radius: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-block; }
+        .button:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0px rgba(0,0,0,0.2); }
+        .button.secondary { background: #3b82f6; }
+        .button.warning { background: #f59e0b; }
+        .title { font-family: 'Poppins', sans-serif; -webkit-text-stroke: 2px black; text-shadow: 3px 3px 0px rgba(0,0,0,0.3); }
+        .hero-subtitle {
+            color: #001f3f; /* dark blue */
+            -webkit-text-stroke: 0.5px rgba(0,0,0,0.6);
+            text-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen p-4 md:p-8">
+        <div class="max-w-5xl mx-auto">
+            <!-- Hero -->
+            <div class="text-center mb-12">
+                <h1 class="title text-6xl md:text-7xl font-black text-white mb-4">
+                    ⚡ PHYSICS ADVENTURE ⚡
+                </h1>
+                <p class="text-2xl font-bold hero-subtitle drop-shadow-lg">
+                    Game Edukatif Fisika Online
+                </p>
+            </div>
+
+            <!-- Main CTA -->
+            <!-- Main Action Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-12">
+                <div class="card p-8 text-center flex flex-col h-full">
+                    <div class="text-6xl mb-4">🎮</div>
+                    <h2 class="text-2xl font-black mb-3 flex-grow">Main Game</h2>
+                    <p class="text-gray-600 mb-6 flex-grow">Mainkan game fisika 2D dengan 9 level tantangan</p>
+                    <a href="liyaa.html" class="button w-full text-center mt-auto">MULAI BERMAIN</a>
+                </div>
+
+                <div class="card p-8 text-center flex flex-col h-full">
+                    <div class="text-6xl mb-4">🏆</div>
+                    <h2 class="text-2xl font-black mb-3 flex-grow">Leaderboard</h2>
+                    <p class="text-gray-600 mb-6 flex-grow">Lihat skor pemain terbaik dan berkompetisi</p>
+                    <a href="dashboard.html" class="button secondary w-full text-center mt-auto">LIHAT RANKING</a>
+                </div>
+
+                <div class="card p-8 text-center flex flex-col h-full">
+                    <div class="text-6xl mb-4">📚</div>
+                    <h2 class="text-2xl font-black mb-3 flex-grow">Materi Pembelajaran</h2>
+                    <p class="text-gray-600 mb-6 flex-grow">Pelajari konsep fisika momentum dan impuls</p>
+                    <a href="materi.html" class="button warning w-full text-center mt-auto">BELAJAR SEKARANG</a>
+                </div>
+            </div>
+
+            <!-- Information Sections -->
+            <div class="space-y-6">
+                <!-- What is Physics Adventure -->
+                <div class="card p-8">
+                    <h2 class="text-3xl font-black mb-4">📖 Tentang Physics Adventure</h2>
+                    <p class="text-lg mb-4">
+                        Physics Adventure adalah game edukatif 2D yang dirancang untuk mengajarkan konsep <strong>Fisika Momentum & Impuls</strong> dengan cara yang menyenangkan dan interaktif. Pemain berlari melalui berbagai tantangan fisika sambil menjawab kuis dan mengumpulkan poin.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="font-bold mb-2">✨ Fitur Utama:</h3>
+                            <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                <li>9 level dengan soal fisika berbeda</li>
+                                <li>Scoring system real-time</li>
+                                <li>Leaderboard global</li>
+                                <li>2 karakter pilihan</li>
+                                <li>Sound & visual effects</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold mb-2">🎯 Konsep yang Diajarkan:</h3>
+                            <ul class="list-decimal list-inside space-y-1 text-gray-700">
+                                <li>Konsep Momentum</li>
+                                <li>Konsep Impuls</li>
+                                <li>Hubungan Impuls (I) dan Momentum (p)</li>
+                                <li>Hukum Kekekalan Momentum Linier</li>
+                                <li>Koefisien Restitusi</li>
+                                <li>Jenis-jenis Tumbukan</li>
+                                <li>Aplikasi Momentum dan Impuls dalam Kehidupan Sehari-hari</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- How to Play -->
+                <div class="card p-8">
+                    <h2 class="text-3xl font-black mb-4">🎮 Cara Bermain</h2>
+                    <div class="space-y-4">
+                        <div class="flex gap-4">
+                            <div class="text-4xl">1️⃣</div>
+                            <div>
+                                <h3 class="font-bold text-lg">Mulai Game</h3>
+                                <p class="text-gray-600">Masukkan nama Anda dan pilih avatar (Lucy atau Luke)</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="text-4xl">2️⃣</div>
+                            <div>
+                                <h3 class="font-bold text-lg">Mainkan Level</h3>
+                                <p class="text-gray-600">Gunakan WASD/Arrow Keys untuk bergerak dan sentuh rintangan untuk memulai kuis</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="text-4xl">3️⃣</div>
+                            <div>
+                                <h3 class="font-bold text-lg">Jawab Kuis</h3>
+                                <p class="text-gray-600">Jawab soal fisika dengan benar untuk membuka gerbang dan lanjut ke level berikutnya</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="text-4xl">4️⃣</div>
+                            <div>
+                                <h3 class="font-bold text-lg">Kumpulkan Poin</h3>
+                                <p class="text-gray-600">+10 poin untuk jawaban benar, -5 untuk salah, +50 bonus saat selesai</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="text-4xl">5️⃣</div>
+                            <div>
+                                <h3 class="font-bold text-lg">Lihat Ranking</h3>
+                                <p class="text-gray-600">Buka dashboard untuk melihat skor Anda di leaderboard global</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Start -->
+                <div class="card p-8 bg-blue-50 border-4 border-blue-600">
+                    <h2 class="text-3xl font-black mb-4 text-blue-700">⚡ Quick Start</h2>
+                    <div class="space-y-3">
+                        <p class="text-lg">
+                            <strong>Pilihan 1: Main Langsung</strong><br>
+                            Klik tombol "MULAI BERMAIN" di atas → Mainkan game sekarang!<br>
+                            <em class="text-gray-600">(Skor akan tersimpan jika Firebase sudah setup)</em>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- System Requirements -->
+                <div class="card p-8">
+                    <h2 class="text-3xl font-black mb-4">💻 Persyaratan Sistem</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="font-bold mb-2">Browser Kompatibel:</h3>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Chrome (latest)</li>
+                                <li>Firefox (latest)</li>
+                                <li>Safari (latest)</li>
+                                <li>Edge (latest)</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold mb-2">Device Support:</h3>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Desktop (Windows/Mac/Linux)</li>
+                                <li>Tablet (iPad/Android)</li>
+                                <li>Mobile (Landscape mode)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documentation -->
+                <div class="card p-8">
+                    <h2 class="text-3xl font-black mb-4">📚 Dokumentasi</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <a href="README.md" class="flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 rounded border-2 border-gray-300 transition">
+                            <span class="text-3xl">📖</span>
+                            <div>
+                                <div class="font-bold">README.md</div>
+                                <div class="text-sm text-gray-600">Panduan lengkap dan troubleshooting</div>
+                            </div>
+                        </a>
+                        <a href="SETUP.html" class="flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 rounded border-2 border-gray-300 transition">
+                            <span class="text-3xl">🚀</span>
+                            <div>
+                                <div class="font-bold">SETUP.html</div>
+                                <div class="text-sm text-gray-600">Setup Firebase step-by-step</div>
+                            </div>
+                        </a>
+                        <a href="DOKUMENTASI.md" class="flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 rounded border-2 border-gray-300 transition">
+                            <span class="text-3xl">⚙️</span>
+                            <div>
+                                <div class="font-bold">DOKUMENTASI.md</div>
+                                <div class="text-sm text-gray-600">Technical documentation</div>
+                            </div>
+                        </a>
+                        <a href="START-HERE.txt" class="flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 rounded border-2 border-gray-300 transition">
+                            <span class="text-3xl">⭐</span>
+                            <div>
+                                <div class="font-bold">START-HERE.txt</div>
+                                <div class="text-sm text-gray-600">Quick reference guide</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- FAQs -->
+                <div class="card p-8">
+                    <h2 class="text-3xl font-black mb-4">❓ Pertanyaan Umum</h2>
+                    <div class="space-y-4">
+                        <details class="border-b-2 pb-4">
+                            <summary class="font-bold cursor-pointer hover:text-blue-600">Apakah game ini gratis?</summary>
+                            <p class="mt-2 text-gray-700">Ya! Physics Adventure 100% gratis untuk dimainkan. Tidak ada biaya tersembunyi atau in-app purchase.</p>
+                        </details>
+                        <details class="border-b-2 pb-4">
+                            <summary class="font-bold cursor-pointer hover:text-blue-600">Bisakah saya bermain offline?</summary>
+                            <p class="mt-2 text-gray-700">Ya! Game bisa dimainkan offline. Tapi skor tidak akan tersimpan dan dashboard tidak akan update. Untuk fitur online, setup Firebase terlebih dahulu.</p>
+                        </details>
+                        <details class="border-b-2 pb-4">
+                            <summary class="font-bold cursor-pointer hover:text-blue-600">Berapa lama main satu game?</summary>
+                            <p class="mt-2 text-gray-700">Rata-rata 15-25 menit tergantung kecepatan menjawab kuis. Anda bisa ulangi kapan saja untuk mencari skor lebih tinggi.</p>
+                        </details>
+                        <details class="border-b-2 pb-4">
+                            <summary class="font-bold cursor-pointer hover:text-blue-600">Apakah cocok untuk pelajar?</summary>
+                            <p class="mt-2 text-gray-700">Ya! Game ini dirancang khusus untuk pelajar SMA yang sedang belajar Momentum & Impuls. Setiap level menjelaskan konsep fisika dengan visual menarik.</p>
+                        </details>
+                        <details class="border-b-2 pb-4">
+                            <summary class="font-bold cursor-pointer hover:text-blue-600">Bagaimana jika jawaban saya salah?</summary>
+                            <p class="mt-2 text-gray-700">Tidak apa-apa! Anda akan kehilangan 5 poin dan bisa mencoba lagi. Setiap kuis disertai penjelasan untuk membantu belajar.</p>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- Call to Action -->
+                <div class="card p-8 bg-green-50 border-4 border-green-600 text-center">
+                    <h2 class="text-4xl font-black mb-4 text-green-700">🎮 Siap Bermain?</h2>
+                    <p class="text-lg mb-6 text-gray-700">Jangan tunggu lagi! Mulai mainkan Physics Adventure sekarang dan raih skor tertinggi di leaderboard!</p>
+                    <a href="liyaa.html" class="button w-full md:w-auto py-4 px-8 text-xl">MULAI SEKARANG!</a>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-12 text-white">
+                <p class="text-lg font-bold">Physics Adventure © 2025</p>
+                <p class="text-sm opacity-80">Educational Game for Physics Learning</p>
+                <p class="text-xs opacity-60 mt-2">All rights reserved</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

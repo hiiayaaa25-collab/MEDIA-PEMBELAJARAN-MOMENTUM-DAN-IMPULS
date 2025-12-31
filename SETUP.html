@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Adventure - Setup Instructions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Fredoka', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .step-card {
+            background: white;
+            border: 3px solid #000;
+            border-radius: 1rem;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+        }
+        .code-block {
+            background: #1f2937;
+            color: #10b981;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            border: 2px solid #000;
+        }
+        .button-primary {
+            background: #22c55e;
+            color: white;
+            border: 2px solid #000;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .button-primary:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen p-4 md:p-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <h1 class="text-5xl md:text-6xl font-black text-white mb-4" style="-webkit-text-stroke: 2px black;">
+                    ⚡ PHYSICS ADVENTURE ⚡
+                </h1>
+                <p class="text-2xl font-bold text-white drop-shadow-lg">
+                    Setup Guide - Buat Game Tersedia Online
+                </p>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+                <a href="liyaa.html" class="button-primary text-center">🎮 Main Game (Offline)</a>
+                <a href="dashboard.html" class="button-primary text-center">📊 Lihat Dashboard</a>
+                <button onclick="scrollToSetup()" class="button-primary">🚀 Setup Online</button>
+            </div>
+
+            <!-- Main Content -->
+            <div class="space-y-6">
+                <!-- Step 1 -->
+                <div class="step-card p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="text-4xl">1️⃣</div>
+                        <h2 class="text-3xl font-black">Buat Firebase Project</h2>
+                    </div>
+                    <ol class="space-y-3 list-decimal list-inside">
+                        <li class="text-lg">Buka <a href="https://console.firebase.google.com/" target="_blank" class="text-blue-600 font-bold underline">Firebase Console</a></li>
+                        <li class="text-lg">Klik <strong>"Create a project"</strong></li>
+                        <li class="text-lg">Nama project: <code class="bg-gray-100 px-2 py-1 rounded">physics-adventure</code></li>
+                        <li class="text-lg">Uncheck "Enable Google Analytics"</li>
+                        <li class="text-lg">Klik <strong>"Create Project"</strong></li>
+                    </ol>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="step-card p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="text-4xl">2️⃣</div>
+                        <h2 class="text-3xl font-black">Setup Firestore Database</h2>
+                    </div>
+                    <ol class="space-y-3 list-decimal list-inside">
+                        <li class="text-lg">Di sidebar → <strong>Build</strong> → <strong>Firestore Database</strong></li>
+                        <li class="text-lg">Klik <strong>"Create database"</strong></li>
+                        <li class="text-lg">Location: Pilih <code class="bg-gray-100 px-2 py-1 rounded">asia-southeast1</code> (Asia)</li>
+                        <li class="text-lg">Security: Pilih <strong>"Start in test mode"</strong></li>
+                        <li class="text-lg">Klik <strong>"Create"</strong></li>
+                    </ol>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="step-card p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="text-4xl">3️⃣</div>
+                        <h2 class="text-3xl font-black">Enable Authentication</h2>
+                    </div>
+                    <ol class="space-y-3 list-decimal list-inside">
+                        <li class="text-lg">Di sidebar → <strong>Build</strong> → <strong>Authentication</strong></li>
+                        <li class="text-lg">Klik tab <strong>"Sign-in method"</strong></li>
+                        <li class="text-lg">Cari <strong>"Anonymous"</strong></li>
+                        <li class="text-lg">Toggle <strong>ON</strong> → Klik <strong>"Enable"</strong> → Save</li>
+                    </ol>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="step-card p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="text-4xl">4️⃣</div>
+                        <h2 class="text-3xl font-black">Copy Firebase Config</h2>
+                    </div>
+                    <ol class="space-y-3 list-decimal list-inside">
+                        <li class="text-lg">Klik icon ⚙️ di atas → <strong>"Project Settings"</strong></li>
+                        <li class="text-lg">Scroll ke bawah → <strong>"Your apps"</strong></li>
+                        <li class="text-lg">Klik icon <code class="bg-gray-100 px-2 py-1 rounded">&lt;/&gt;</code> untuk Web</li>
+                        <li class="text-lg">Nama app: <code class="bg-gray-100 px-2 py-1 rounded">physics-adventure</code></li>
+                        <li class="text-lg">Klik <strong>"Register app"</strong></li>
+                        <li class="text-lg">Pilih tab <strong>"Use a CDN"</strong></li>
+                        <li class="text-lg">✂️ Copy semua config (dari <code>const firebaseConfig</code> sampai <code>});</code></li>
+                    </ol>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="step-card p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="text-4xl">5️⃣</div>
+                        <h2 class="text-3xl font-black">Paste Config ke Project</h2>
+                    </div>
+                    <div class="space-y-4">
+                        <p class="text-lg"><strong>File 1: firebase-config.js</strong></p>
+                        <div class="code-block">
+const firebaseConfig = {<br>
+&nbsp;&nbsp;apiKey: "YOUR_API_KEY_DARI_FIREBASE",<br>
+&nbsp;&nbsp;authDomain: "your-project.firebaseapp.com",<br>
+&nbsp;&nbsp;projectId: "your-project-name",<br>
+&nbsp;&nbsp;storageBucket: "your-project.appspot.com",<br>
+&nbsp;&nbsp;messagingSenderId: "123456789",<br>
+&nbsp;&nbsp;appId: "1:123456789:web:abc123"<br>
+};<br>
+                        </div>
+                        <p class="text-lg"><strong>File 2: dashboard.html</strong> (cari bagian Firebase Config)</p>
+                        <div class="code-block">
+const firebaseConfig = {<br>
+&nbsp;&nbsp;// Paste config yang sama di sini<br>
+};
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6 -->
+                <div class="step-card p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="text-4xl">6️⃣</div>
+                        <h2 class="text-3xl font-black">Upload ke GitHub</h2>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="code-block">
+git add .<br>
+git commit -m "Add Physics Adventure with Firebase"<br>
+git push origin main
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 7 -->
+                <div class="step-card p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="text-4xl">7️⃣</div>
+                        <h2 class="text-3xl font-black">Deploy ke Web</h2>
+                    </div>
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-xl font-bold mb-3">Opsi A: GitHub Pages (Gratis)</h3>
+                            <ol class="space-y-2 list-decimal list-inside">
+                                <li>GitHub Repo → Settings → Pages</li>
+                                <li>Source: Branch <code class="bg-gray-100 px-2 py-1 rounded">main</code>, folder <code class="bg-gray-100 px-2 py-1 rounded">/root</code></li>
+                                <li>Klik Save → Website aktif di <code class="bg-gray-100 px-2 py-1 rounded">https://username.github.io/liyaaa</code></li>
+                            </ol>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-3">Opsi B: Vercel (Recommended)</h3>
+                            <ol class="space-y-2 list-decimal list-inside">
+                                <li>Buka <a href="https://vercel.com" target="_blank" class="text-blue-600 font-bold">vercel.com</a></li>
+                                <li>Import GitHub repo</li>
+                                <li>Klik Deploy → Website live dalam 2 menit! 🚀</li>
+                            </ol>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-3">Opsi C: Firebase Hosting</h3>
+                            <div class="code-block">
+firebase init hosting<br>
+firebase deploy
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verification -->
+                <div class="step-card p-6 bg-green-50 border-4 border-green-600">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="text-4xl">✅</div>
+                        <h2 class="text-3xl font-black text-green-700">Verifikasi</h2>
+                    </div>
+                    <div class="space-y-3">
+                        <p class="text-lg">
+                            ✔️ Buka game: <code class="bg-white px-2 py-1 rounded">https://your-domain.com/liyaa.html</code>
+                        </p>
+                        <p class="text-lg">
+                            ✔️ Mainkan game & jawab kuis
+                        </p>
+                        <p class="text-lg">
+                            ✔️ Lihat dashboard: <code class="bg-white px-2 py-1 rounded">https://your-domain.com/dashboard.html</code>
+                        </p>
+                        <p class="text-lg">
+                            ✔️ Skor Anda harus muncul di leaderboard!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Troubleshooting -->
+                <div class="step-card p-6">
+                    <h2 class="text-3xl font-black mb-4">🐛 Jika Ada Masalah</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-red-600">❌ "Firebase config not found"</h3>
+                            <p>→ Game masih bisa dimaink di offline mode, tapi skor tidak tersimpan</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-red-600">❌ Dashboard kosong</h3>
+                            <p>→ Tunggu 1-2 menit, Firebase perlu waktu untuk sync</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-red-600">❌ Skor tidak menyimpan</h3>
+                            <p>→ Cek Firestore permissions: harus "test mode"</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-red-600">❌ Musik tidak play</h3>
+                            <p>→ Klik button game terlebih dahulu (browser memerlukan interaksi user)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Next Steps -->
+                <div class="step-card p-6 bg-blue-50 border-4 border-blue-600">
+                    <h2 class="text-3xl font-black mb-4 text-blue-700">🎯 Langkah Selanjutnya</h2>
+                    <ul class="space-y-3 list-disc list-inside">
+                        <li class="text-lg">Invite teman untuk bermain & berkompetisi!</li>
+                        <li class="text-lg">Bagikan link game & dashboard</li>
+                        <li class="text-lg">Monitor leaderboard dan ranking</li>
+                        <li class="text-lg">Tambah lebih banyak soal & level</li>
+                        <li class="text-lg">Kustomisasi karakter & visual</li>
+                    </ul>
+                </div>
+
+                <!-- Quick Links at Bottom -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button onclick="downloadSetupGuide()" class="button-primary py-4 text-lg">📥 Download Setup Guide</button>
+                    <button onclick="contactSupport()" class="button-primary py-4 text-lg">💬 Butuh Bantuan?</button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-12 text-white">
+                <p class="text-lg font-bold">Physics Adventure © 2025 - Educational Game</p>
+                <p class="text-sm opacity-80">Untuk panduan lengkap, baca README.md</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function scrollToSetup() {
+            const firstStep = document.querySelector('.step-card');
+            firstStep.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function downloadSetupGuide() {
+            const guide = `PHYSICS ADVENTURE - SETUP GUIDE
+================================
+
+STEP 1: BUAT FIREBASE PROJECT
+- Buka https://console.firebase.google.com/
+- Klik "Create a project"
+- Nama: physics-adventure
+- Klik "Create"
+
+STEP 2: SETUP FIRESTORE
+- Build → Firestore Database
+- Create database
+- Location: asia-southeast1
+- Security: Start in test mode
+- Create
+
+STEP 3: ENABLE AUTHENTICATION
+- Build → Authentication
+- Sign-in method → Anonymous
+- Enable
+
+STEP 4: COPY CONFIG
+- Settings (gear icon)
+- Project Settings
+- Your apps → Web
+- Register app
+- Copy config
+
+STEP 5: PASTE CONFIG
+- Edit firebase-config.js
+- Paste config Anda
+- Edit dashboard.html: paste config juga
+
+STEP 6: UPLOAD KE GITHUB
+git add .
+git commit -m "Add Physics Adventure"
+git push origin main
+
+STEP 7: DEPLOY
+Option A: GitHub Pages (Settings → Pages)
+Option B: Vercel (vercel.com → Import)
+Option C: Firebase Hosting (firebase deploy)
+
+VERIFIKASI:
+✅ Buka game di domain Anda
+✅ Mainkan dan jawab kuis
+✅ Lihat dashboard
+✅ Skor muncul di leaderboard
+
+SELESAI! 🎉
+Game Anda sekarang online!`;
+
+            const blob = new Blob([guide], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Physics_Adventure_Setup_Guide.txt';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        function contactSupport() {
+            alert('📧 Email: support@physicsadventure.com\n💬 Discord: discord.gg/physicsadventure\n\nAtau buka issue di GitHub repo!');
+        }
+    </script>
+</body>
+</html>
